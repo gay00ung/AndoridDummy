@@ -2,25 +2,106 @@ package net.ifmain.androiddummy
 
 import android.os.Bundle
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.core.view.WindowCompat
 import androidx.fragment.app.FragmentActivity
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import net.ifmain.androiddummy.biometric.FingerprintAuthScreen
 import net.ifmain.androiddummy.biometric.FingerprintAuthTheme
+import net.ifmain.androiddummy.mlkit.FaceDetectionScreen
 
 class MainActivity : FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         setContent {
             FingerprintAuthTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    FingerprintAuthScreen()
+                    MainApp()
                 }
+            }
+        }
+    }
+}
+
+@Composable
+fun MainApp() {
+    val navController = rememberNavController()
+    
+    NavHost(
+        navController = navController,
+        startDestination = "home"
+    ) {
+        composable("home") {
+            HomeScreen(
+                onFingerprintClick = { navController.navigate("fingerprint") },
+                onFaceDetectionClick = { navController.navigate("face_detection") }
+            )
+        }
+        composable("fingerprint") {
+            FingerprintAuthScreen()
+        }
+        composable("face_detection") {
+            FaceDetectionScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun HomeScreen(
+    onFingerprintClick: () -> Unit,
+    onFaceDetectionClick: () -> Unit
+) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Android Dummy") },
+                modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top))
+            )
+        },
+        modifier = Modifier.fillMaxSize(),
+        contentWindowInsets = WindowInsets(0, 0, 0, 0)
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Button(
+                onClick = onFingerprintClick,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+            ) {
+                Text("지문 인증 테스트")
+            }
+            
+            Button(
+                onClick = onFaceDetectionClick,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+            ) {
+                Text("얼굴 표정 인식")
             }
         }
     }

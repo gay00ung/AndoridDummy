@@ -59,4 +59,19 @@ dependencies {
 
     // Biometric
     implementation (libs.androidx.biometric.ktx)
+
+    // ML Kit
+    implementation (libs.face.detection)
+    
+    // CameraX
+    implementation(libs.androidx.camera.core)
+    implementation(libs.androidx.camera.camera2)
+    implementation(libs.androidx.camera.lifecycle)
+    implementation(libs.androidx.camera.view)
+    
+    // Accompanist Permissions
+    implementation(libs.accompanist.permissions)
+    
+    // Navigation Compose
+    implementation(libs.androidx.navigation.compose)
 }
