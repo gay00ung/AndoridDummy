@@ -74,4 +74,7 @@ dependencies {
     
     // Navigation Compose
     implementation(libs.androidx.navigation.compose)
+
+    // ONNX Runtime
+    implementation (libs.onnxruntime.android)
 }

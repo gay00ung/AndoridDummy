@@ -1,6 +1,5 @@
 package net.ifmain.androiddummy.mlkit
 
-import android.Manifest
 import android.annotation.SuppressLint
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
@@ -17,9 +16,6 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
-import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.isGranted
-import com.google.accompanist.permissions.rememberPermissionState
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.Face
 import com.google.mlkit.vision.face.FaceDetection
@@ -35,14 +31,11 @@ import java.util.concurrent.Executors
  * Description:
  */
 @SuppressLint("DefaultLocale")
-@OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FaceDetectionScreen(
     onBack: () -> Unit
 ) {
-    val cameraPermissionState = rememberPermissionState(
-        Manifest.permission.CAMERA
-    )
     
     var detectedFaces by remember { mutableStateOf<List<Face>>(emptyList()) }
     var emotionState by remember { mutableStateOf("표정을 분석중...") }
@@ -63,12 +56,11 @@ fun FaceDetectionScreen(
         },
         contentWindowInsets = WindowInsets(0, 0, 0, 0)
     ) { paddingValues ->
-        if (cameraPermissionState.status.isGranted) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-            ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
                 CameraPreview(
                     onFaceDetected = { faces, width, height ->
                         detectedFaces = faces
@@ -122,28 +114,6 @@ fun FaceDetectionScreen(
                             )
                         }
                     }
-                }
-            }
-        } else {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = "카메라 권한이 필요합니다",
-                    style = MaterialTheme.typography.headlineSmall
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                Button(
-                    onClick = { cameraPermissionState.launchPermissionRequest() }
-                ) {
-                    Text("권한 요청")
-                }
             }
         }
     }

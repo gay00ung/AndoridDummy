@@ -1,5 +1,6 @@
 package net.ifmain.androiddummy
 
+import android.Manifest
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -14,9 +15,13 @@ import androidx.fragment.app.FragmentActivity
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
 import net.ifmain.androiddummy.biometric.FingerprintAuthScreen
 import net.ifmain.androiddummy.biometric.FingerprintAuthTheme
 import net.ifmain.androiddummy.mlkit.FaceDetectionScreen
+import net.ifmain.androiddummy.onnx.ui.AnimeFilterScreen
 
 class MainActivity : FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -47,7 +52,8 @@ fun MainApp() {
         composable("home") {
             HomeScreen(
                 onFingerprintClick = { navController.navigate("fingerprint") },
-                onFaceDetectionClick = { navController.navigate("face_detection") }
+                onFaceDetectionClick = { navController.navigate("face_detection") },
+                onAnimeFilterClick = { navController.navigate("anime_filter") },
             )
         }
         composable("fingerprint") {
@@ -58,15 +64,24 @@ fun MainApp() {
                 onBack = { navController.popBackStack() }
             )
         }
+        composable("anime_filter") {
+            AnimeFilterScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
 fun HomeScreen(
     onFingerprintClick: () -> Unit,
-    onFaceDetectionClick: () -> Unit
+    onFaceDetectionClick: () -> Unit,
+    onAnimeFilterClick: () -> Unit,
 ) {
+    val cameraPermissionState = rememberPermissionState(
+        Manifest.permission.CAMERA
+    )
     Scaffold(
         topBar = {
             TopAppBar(
@@ -96,12 +111,42 @@ fun HomeScreen(
             }
             
             Button(
-                onClick = onFaceDetectionClick,
+                onClick = {
+                    if (cameraPermissionState.status.isGranted) {
+                        onFaceDetectionClick()
+                    } else {
+                        cameraPermissionState.launchPermissionRequest()
+                    }
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp)
             ) {
                 Text("얼굴 표정 인식")
+            }
+
+            Button(
+                onClick = {
+                    if (cameraPermissionState.status.isGranted) {
+                        onAnimeFilterClick()
+                    } else {
+                        cameraPermissionState.launchPermissionRequest()
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+            ) {
+                Text("애니메이션 필터")
+            }
+            
+            if (!cameraPermissionState.status.isGranted) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "카메라 권한이 필요합니다",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error
+                )
             }
         }
     }
