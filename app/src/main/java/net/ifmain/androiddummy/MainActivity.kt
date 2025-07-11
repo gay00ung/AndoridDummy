@@ -20,6 +20,7 @@ import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import net.ifmain.androiddummy.biometric.FingerprintAuthScreen
 import net.ifmain.androiddummy.biometric.FingerprintAuthTheme
+import net.ifmain.androiddummy.chatbot.ui.NutritionChatScreen
 import net.ifmain.androiddummy.mlkit.FaceDetectionScreen
 import net.ifmain.androiddummy.onnx.ui.AnimeFilterScreen
 
@@ -54,6 +55,7 @@ fun MainApp() {
                 onFingerprintClick = { navController.navigate("fingerprint") },
                 onFaceDetectionClick = { navController.navigate("face_detection") },
                 onAnimeFilterClick = { navController.navigate("anime_filter") },
+                onNutritionChatClick = { navController.navigate("nutrition_chat") }
             )
         }
         composable("fingerprint") {
@@ -69,6 +71,11 @@ fun MainApp() {
                 onBack = { navController.popBackStack() }
             )
         }
+        composable("nutrition_chat") {
+            NutritionChatScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
     }
 }
 
@@ -78,6 +85,7 @@ fun HomeScreen(
     onFingerprintClick: () -> Unit,
     onFaceDetectionClick: () -> Unit,
     onAnimeFilterClick: () -> Unit,
+    onNutritionChatClick: () -> Unit,
 ) {
     val cameraPermissionState = rememberPermissionState(
         Manifest.permission.CAMERA
@@ -138,6 +146,15 @@ fun HomeScreen(
                     .padding(vertical = 8.dp)
             ) {
                 Text("애니메이션 필터")
+            }
+
+            Button(
+                onClick = onNutritionChatClick,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+            ) {
+                Text("AI 영양 코치")
             }
             
             if (!cameraPermissionState.status.isGranted) {

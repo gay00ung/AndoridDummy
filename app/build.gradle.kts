@@ -77,4 +77,9 @@ dependencies {
 
     // ONNX Runtime
     implementation (libs.onnxruntime.android)
+
+    // HTTP Client
+    implementation (libs.retrofit)
+    implementation (libs.converter.gson)
+    implementation (libs.logging.interceptor)
 }
