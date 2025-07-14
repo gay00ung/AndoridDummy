@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "net.ifmain.androiddummy"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "net.ifmain.androiddummy"
@@ -56,6 +56,8 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+    implementation(libs.androidx.runtime.livedata)
+    implementation(libs.androidx.lifecycle.runtime.compose)
 
     // Biometric
     implementation (libs.androidx.biometric.ktx)

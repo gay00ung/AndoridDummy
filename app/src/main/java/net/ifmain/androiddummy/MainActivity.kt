@@ -23,6 +23,8 @@ import net.ifmain.androiddummy.biometric.FingerprintAuthTheme
 import net.ifmain.androiddummy.chatbot.ui.NutritionChatScreen
 import net.ifmain.androiddummy.mlkit.FaceDetectionScreen
 import net.ifmain.androiddummy.onnx.ui.AnimeFilterScreen
+import net.ifmain.androiddummy.sensor_ui.ui.TaroCardScreen
+import net.ifmain.androiddummy.sensor_ui.ui.TiltCardScreen
 
 class MainActivity : FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,7 +47,7 @@ class MainActivity : FragmentActivity() {
 @Composable
 fun MainApp() {
     val navController = rememberNavController()
-    
+
     NavHost(
         navController = navController,
         startDestination = "home"
@@ -55,7 +57,9 @@ fun MainApp() {
                 onFingerprintClick = { navController.navigate("fingerprint") },
                 onFaceDetectionClick = { navController.navigate("face_detection") },
                 onAnimeFilterClick = { navController.navigate("anime_filter") },
-                onNutritionChatClick = { navController.navigate("nutrition_chat") }
+                onNutritionChatClick = { navController.navigate("nutrition_chat") },
+                onSensorUiClick = { navController.navigate("sensor_ui") },
+                onTaroCardClick = { navController.navigate("taro_card") },
             )
         }
         composable("fingerprint") {
@@ -76,6 +80,16 @@ fun MainApp() {
                 onBack = { navController.popBackStack() }
             )
         }
+        composable("sensor_ui") {
+            TiltCardScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
+        composable("taro_card") {
+            TaroCardScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
     }
 }
 
@@ -86,6 +100,8 @@ fun HomeScreen(
     onFaceDetectionClick: () -> Unit,
     onAnimeFilterClick: () -> Unit,
     onNutritionChatClick: () -> Unit,
+    onSensorUiClick: () -> Unit,
+    onTaroCardClick: () -> Unit,
 ) {
     val cameraPermissionState = rememberPermissionState(
         Manifest.permission.CAMERA
@@ -94,7 +110,11 @@ fun HomeScreen(
         topBar = {
             TopAppBar(
                 title = { Text("Android Dummy") },
-                modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top))
+                modifier = Modifier.windowInsetsPadding(
+                    WindowInsets.safeDrawing.only(
+                        WindowInsetsSides.Horizontal + WindowInsetsSides.Top
+                    )
+                )
             )
         },
         modifier = Modifier.fillMaxSize(),
@@ -117,7 +137,7 @@ fun HomeScreen(
             ) {
                 Text("지문 인증 테스트")
             }
-            
+
             Button(
                 onClick = {
                     if (cameraPermissionState.status.isGranted) {
@@ -156,7 +176,25 @@ fun HomeScreen(
             ) {
                 Text("AI 영양 코치")
             }
-            
+
+            Button(
+                onClick = onSensorUiClick,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+            ) {
+                Text("센서 반응형 UI")
+            }
+
+            Button(
+                onClick = onTaroCardClick,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+            ) {
+                Text("타로 카드")
+            }
+
             if (!cameraPermissionState.status.isGranted) {
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
