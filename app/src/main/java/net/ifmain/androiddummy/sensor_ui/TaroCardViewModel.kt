@@ -52,6 +52,7 @@ class TaroCardViewModel : ViewModel() {
                         flipToPrevious()
                     }
                     lastFlipTime = currentTime
+                    // 원래 햅틱 유지하면서 추가 효과도 가능
                     hapticUtils?.mediumTap()
                 }
             }

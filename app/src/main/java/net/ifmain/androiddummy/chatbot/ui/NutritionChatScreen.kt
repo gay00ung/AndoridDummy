@@ -12,7 +12,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.gayoung.microinteractions.MicroInteractions
+import com.gayoung.microinteractions.core.*
+import com.gayoung.microinteractions.extensions.*
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.slideInVertically
 import kotlinx.coroutines.launch
 import net.ifmain.androiddummy.chatbot.ChatRequest
 import net.ifmain.androiddummy.chatbot.ChatbotService
@@ -43,6 +50,7 @@ fun NutritionChatScreen(
     var isLoading by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
     val listState = rememberLazyListState()
+    val context = LocalContext.current
 
     // 초기 메시지
     LaunchedEffect(Unit) {
@@ -141,6 +149,17 @@ fun NutritionChatScreen(
 
                                 // 사용자 메시지 추가
                                 messages = messages + ChatMessage(userMessage, true)
+                                
+                                // 메시지 전송 피드백
+                                (context as? android.app.Activity)?.window?.decorView?.triggerMicroInteraction(
+                                    MicroInteraction.Custom(
+                                        customName = "message_send",
+                                        feedback = FeedbackType.combined(
+                                            FeedbackType.haptic(HapticType.LIGHT),
+                                            FeedbackType.animation(AnimationType.PULSE)
+                                        )
+                                    )
+                                )
 
                                 // AI 응답 받기
                                 isLoading = true
@@ -158,14 +177,35 @@ fun NutritionChatScreen(
                                         )
 
                                         messages = if (response.success && response.response != null) {
+                                            // 성공적인 응답 수신 피드백
+                                            (context as? android.app.Activity)?.window?.decorView?.triggerMicroInteraction(
+                                                MicroInteraction.Custom(
+                                                    customName = "message_received",
+                                                    feedback = FeedbackType.combined(
+                                                        FeedbackType.haptic(HapticType.SELECTION),
+                                                        FeedbackType.animation(AnimationType.BOUNCE)
+                                                    )
+                                                )
+                                            )
                                             messages + ChatMessage(response.response, false)
                                         } else {
+                                            // 에러 피드백
+                                            (context as? android.app.Activity)?.window?.decorView?.triggerMicroInteraction(
+                                                MicroInteraction.Failure
+                                            )
                                             messages + ChatMessage(
                                                 "죄송해요, 일시적인 오류가 발생했어요. 다시 시도해주세요.",
                                                 false
                                             )
                                         }
                                     } catch (_: Exception) {
+                                        // 네트워크 에러 피드백
+                                        (context as? android.app.Activity)?.window?.decorView?.triggerMicroInteraction(
+                                            MicroInteraction.Custom(
+                                                customName = "network_error",
+                                                feedback = FeedbackType.haptic(HapticType.ERROR)
+                                            )
+                                        )
                                         messages = messages + ChatMessage(
                                             "서버 연결에 실패했어요. 서버가 실행 중인지 확인해주세요.",
                                             false
@@ -178,7 +218,8 @@ fun NutritionChatScreen(
                                 }
                             }
                         },
-                        enabled = inputText.isNotBlank() && !isLoading
+                        enabled = inputText.isNotBlank() && !isLoading,
+                        modifier = Modifier.tapInteraction()
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.Send,
@@ -198,12 +239,24 @@ fun NutritionChatScreen(
 @Composable
 fun ChatBubble(message: ChatMessage) {
     val dateFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
+    
+    // 메시지가 나타날 때 애니메이션
+    var isVisible by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        isVisible = true
+    }
 
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = if (message.isUser) Arrangement.End else Arrangement.Start
+    AnimatedVisibility(
+        visible = isVisible,
+        enter = fadeIn() + androidx.compose.animation.slideInVertically(
+            initialOffsetY = { if (message.isUser) 50 else -50 }
+        )
     ) {
-        Card(
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = if (message.isUser) Arrangement.End else Arrangement.Start
+        ) {
+            Card(
             colors = CardDefaults.cardColors(
                 containerColor = if (message.isUser)
                     MaterialTheme.colorScheme.primary
@@ -216,7 +269,8 @@ fun ChatBubble(message: ChatMessage) {
                 bottomStart = if (message.isUser) 16.dp else 4.dp,
                 bottomEnd = if (message.isUser) 4.dp else 16.dp
             ),
-            modifier = Modifier.widthIn(max = 280.dp)
+            modifier = Modifier
+                .widthIn(max = 280.dp)
         ) {
             Column(
                 modifier = Modifier.padding(12.dp)
@@ -238,6 +292,7 @@ fun ChatBubble(message: ChatMessage) {
                         MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f)
                 )
             }
+        }
         }
     }
 }

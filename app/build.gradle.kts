@@ -84,4 +84,7 @@ dependencies {
     implementation (libs.retrofit)
     implementation (libs.converter.gson)
     implementation (libs.logging.interceptor)
+
+    // MicroInteractions
+    implementation("com.github.gay00ung:MicroInteractions:v1.0.2")
 }

@@ -24,6 +24,10 @@ import net.ifmain.androiddummy.sensor_ui.CardState
 import net.ifmain.androiddummy.sensor_ui.HapticUtils
 import kotlin.math.cos
 import kotlin.math.sin
+import androidx.compose.foundation.clickable
+import com.gayoung.microinteractions.MicroInteractions
+import com.gayoung.microinteractions.core.*
+import com.gayoung.microinteractions.extensions.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -132,6 +136,7 @@ fun AnimatedCard(
     index: Int,
     tiltIntensity: Float
 ) {
+    val context = LocalContext.current
     val animatedRotation by animateFloatAsState(
         targetValue = cardState.rotation,
         animationSpec = spring(
@@ -185,7 +190,27 @@ fun AnimatedCard(
                 elevation = (8 + index * 4).dp,
                 shape = RoundedCornerShape(16.dp),
                 ambientColor = cardColors[index][0].copy(alpha = 0.4f)
-            ),
+            )
+            .clickable {
+                // 카드 터치 시 커스텀 피드백
+                val customInteraction = MicroInteraction.Custom(
+                    customName = "card_tap_$index",
+                    feedback = FeedbackType.combined(
+                        FeedbackType.haptic(
+                            when (index) {
+                                0 -> HapticType.LIGHT
+                                1 -> HapticType.MEDIUM
+                                2 -> HapticType.HEAVY
+                                3 -> HapticType.SELECTION
+                                else -> HapticType.SUCCESS
+                            }
+                        ),
+                        FeedbackType.animation(AnimationType.ELASTIC)
+                    )
+                )
+                // View를 찾아서 직접 트리거
+                (context as? android.app.Activity)?.window?.decorView?.triggerMicroInteraction(customInteraction)
+            },
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = (8 + index * 2).dp)
     ) {

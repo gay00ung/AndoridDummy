@@ -1,6 +1,7 @@
 package net.ifmain.androiddummy.sensor_ui.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -21,6 +22,10 @@ import net.ifmain.androiddummy.sensor_ui.TaroCard
 import net.ifmain.androiddummy.sensor_ui.TaroCardViewModel
 import net.ifmain.androiddummy.sensor_ui.TiltSensorManager
 import kotlin.math.*
+import com.gayoung.microinteractions.*
+import com.gayoung.microinteractions.core.*
+import com.gayoung.microinteractions.extensions.*
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -31,12 +36,33 @@ fun TaroCardScreen(
     val context = LocalContext.current
     val deckState by viewModel.deckState.collectAsState()
     val tiltDirection by viewModel.tiltDirection.collectAsState()
+    val coroutineScope = rememberCoroutineScope()
+    
+    // 카드 넘김 효과를 위한 상태
+    var lastCardIndex by remember { mutableStateOf(deckState.currentTopCardIndex) }
 
     LaunchedEffect(Unit) {
         val sensorManager = TiltSensorManager(context)
         val hapticUtils = HapticUtils(context)
         viewModel.initSensor(sensorManager, hapticUtils)
         viewModel.startSensor()
+    }
+    
+    // 카드가 변경될 때 효과 재생
+    LaunchedEffect(deckState.currentTopCardIndex) {
+        if (lastCardIndex != deckState.currentTopCardIndex) {
+            // 카드 넘김 효과
+            (context as? android.app.Activity)?.window?.decorView?.triggerMicroInteraction(
+                MicroInteraction.Custom(
+                    customName = "card_flip",
+                    feedback = FeedbackType.combined(
+                        FeedbackType.haptic(HapticType.MEDIUM),
+                        FeedbackType.animation(AnimationType.SLIDE)
+                    )
+                )
+            )
+            lastCardIndex = deckState.currentTopCardIndex
+        }
     }
 
     DisposableEffect(Unit) {
@@ -176,17 +202,24 @@ fun TaroCardScreen(
                 if (deckState.currentTopCardIndex < deckState.cards.size) {
                     FlippableCard(
                         card = deckState.cards[deckState.currentTopCardIndex],
-                        tiltDirection = tiltDirection
+                        tiltDirection = tiltDirection,
+                        isFirstCard = deckState.currentTopCardIndex == 0,
+                        isLastCard = deckState.currentTopCardIndex == deckState.cards.size - 1
                     )
                 }
             }
 
             // 리셋 버튼
             Button(
-                onClick = { viewModel.resetDeck() },
+                onClick = { 
+                    viewModel.resetDeck()
+                    // 리셋 효과
+                    (context as? android.app.Activity)?.window?.decorView?.triggerMicroInteraction(MicroInteraction.Refresh)
+                },
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
-                    .padding(bottom = 60.dp),
+                    .padding(bottom = 60.dp)
+                    .microInteraction(MicroInteraction.Tap),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6A4C93))
             ) {
                 Text("🔄 덱 리셋", color = Color.White)
@@ -198,17 +231,71 @@ fun TaroCardScreen(
 @Composable
 fun FlippableCard(
     card: TaroCard,
-    tiltDirection: Float
+    tiltDirection: Float,
+    isFirstCard: Boolean = false,
+    isLastCard: Boolean = false
 ) {
+    val context = LocalContext.current
+    var isSelected by remember { mutableStateOf(false) }
+    
+    // 첫 카드나 마지막 카드일 때 특별 효과
+    LaunchedEffect(isFirstCard, isLastCard) {
+        if (isFirstCard) {
+            (context as? android.app.Activity)?.window?.decorView?.triggerMicroInteraction(
+                MicroInteraction.Custom(
+                    customName = "first_card",
+                    feedback = FeedbackType.haptic(HapticType.SUCCESS)
+                )
+            )
+        } else if (isLastCard) {
+            (context as? android.app.Activity)?.window?.decorView?.triggerMicroInteraction(
+                MicroInteraction.Custom(
+                    customName = "last_card",
+                    feedback = FeedbackType.combined(
+                        FeedbackType.haptic(HapticType.HEAVY),
+                        FeedbackType.animation(AnimationType.ELASTIC)
+                    )
+                )
+            )
+        }
+    }
+    
     Card(
         modifier = Modifier
             .size(200.dp, 300.dp)
             .graphicsLayer {
                 rotationY = card.flipProgress * 180f
                 rotationZ = tiltDirection * 5f // 기울기에 따른 약간의 회전
+                scaleX = if (isSelected) 1.05f else 1f
+                scaleY = if (isSelected) 1.05f else 1f
+            }
+            .clickable {
+                isSelected = !isSelected
+                // 카드 선택 효과
+                (context as? android.app.Activity)?.window?.decorView?.triggerMicroInteraction(
+                    if (isSelected) {
+                        MicroInteraction.Custom(
+                            customName = "card_select",
+                            feedback = FeedbackType.combined(
+                                FeedbackType.haptic(HapticType.HEAVY),
+                                FeedbackType.animation(AnimationType.ELASTIC)
+                            )
+                        )
+                    } else {
+                        MicroInteraction.Custom(
+                            customName = "card_deselect",
+                            feedback = FeedbackType.combined(
+                                FeedbackType.haptic(HapticType.LIGHT),
+                                FeedbackType.animation(AnimationType.BOUNCE)
+                            )
+                        )
+                    }
+                )
             },
         shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 12.dp)
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = if (isSelected) 16.dp else 12.dp
+        )
     ) {
         Box(
             modifier = Modifier
@@ -245,9 +332,9 @@ fun FlippableCard(
                         color = Color.Black
                     )
                     Text(
-                        text = "✨ 행운의 카드 ✨",
+                        text = if (isSelected) "✅ 선택됨" else "✨ 행운의 카드 ✨",
                         fontSize = 12.sp,
-                        color = Color.Gray
+                        color = if (isSelected) Color(0xFF4CAF50) else Color.Gray
                     )
                 }
             } else {

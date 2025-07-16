@@ -6,10 +6,15 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.gayoung.microinteractions.MicroInteractions
+import com.gayoung.microinteractions.core.*
+import com.gayoung.microinteractions.extensions.*
 import androidx.core.view.WindowCompat
 import androidx.fragment.app.FragmentActivity
 import androidx.navigation.compose.NavHost
@@ -25,12 +30,22 @@ import net.ifmain.androiddummy.mlkit.FaceDetectionScreen
 import net.ifmain.androiddummy.onnx.ui.AnimeFilterScreen
 import net.ifmain.androiddummy.sensor_ui.ui.TaroCardScreen
 import net.ifmain.androiddummy.sensor_ui.ui.TiltCardScreen
+import net.ifmain.androiddummy.microinteractions.MicroInteractionsShowcaseScreen
 
 class MainActivity : FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         WindowCompat.setDecorFitsSystemWindows(window, false)
+        
+        // MicroInteractions 초기화
+        MicroInteractions.init(this)
+        MicroInteractions.configure {
+            isHapticEnabled = true
+            isSoundEnabled = false // 소리는 끄고 햅틱만 사용
+            isAnimationEnabled = true
+            defaultIntensity = 0.8f
+        }
         setContent {
             FingerprintAuthTheme {
                 Surface(
@@ -60,6 +75,7 @@ fun MainApp() {
                 onNutritionChatClick = { navController.navigate("nutrition_chat") },
                 onSensorUiClick = { navController.navigate("sensor_ui") },
                 onTaroCardClick = { navController.navigate("taro_card") },
+                onMicroInteractionsClick = { navController.navigate("microinteractions") }
             )
         }
         composable("fingerprint") {
@@ -90,6 +106,11 @@ fun MainApp() {
                 onBack = { navController.popBackStack() }
             )
         }
+        composable("microinteractions") {
+            MicroInteractionsShowcaseScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
     }
 }
 
@@ -102,6 +123,7 @@ fun HomeScreen(
     onNutritionChatClick: () -> Unit,
     onSensorUiClick: () -> Unit,
     onTaroCardClick: () -> Unit,
+    onMicroInteractionsClick: () -> Unit
 ) {
     val cameraPermissionState = rememberPermissionState(
         Manifest.permission.CAMERA
@@ -134,6 +156,7 @@ fun HomeScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp)
+                    .microInteraction(MicroInteraction.Tap)
             ) {
                 Text("지문 인증 테스트")
             }
@@ -149,6 +172,7 @@ fun HomeScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp)
+                    .successInteraction() // 성공 효과
             ) {
                 Text("얼굴 표정 인식")
             }
@@ -164,6 +188,7 @@ fun HomeScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp)
+                    .microInteraction(MicroInteraction.Toggle) // 토글 효과
             ) {
                 Text("애니메이션 필터")
             }
@@ -173,6 +198,15 @@ fun HomeScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp)
+                    .microInteraction(
+                        MicroInteraction.Custom(
+                            customName = "chat",
+                            feedback = com.gayoung.microinteractions.core.FeedbackType.combined(
+                                com.gayoung.microinteractions.core.FeedbackType.haptic(com.gayoung.microinteractions.core.HapticType.LIGHT),
+                                com.gayoung.microinteractions.core.FeedbackType.animation(com.gayoung.microinteractions.core.AnimationType.PULSE)
+                            )
+                        )
+                    )
             ) {
                 Text("AI 영양 코치")
             }
@@ -182,6 +216,10 @@ fun HomeScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp)
+                    .microInteraction(
+                        interaction = MicroInteraction.Refresh,
+                        trigger = com.gayoung.microinteractions.extensions.ComposeTrigger.OnClick
+                    )
             ) {
                 Text("센서 반응형 UI")
             }
@@ -191,8 +229,39 @@ fun HomeScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp)
+                    .microInteraction(MicroInteraction.Favorite) // 좋아요 효과
             ) {
                 Text("타로 카드")
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // MicroInteractions 쇼케이스 버튼
+            OutlinedButton(
+                onClick = onMicroInteractionsClick,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+                    .microInteraction(
+                        MicroInteraction.Custom(
+                            customName = "showcase",
+                            feedback = FeedbackType.combined(
+                                FeedbackType.haptic(HapticType.MEDIUM),
+                                FeedbackType.animation(AnimationType.ELASTIC)
+                            )
+                        )
+                    ),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = MaterialTheme.colorScheme.primary
+                )
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Star,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("MicroInteractions 쇼케이스")
             }
 
             if (!cameraPermissionState.status.isGranted) {

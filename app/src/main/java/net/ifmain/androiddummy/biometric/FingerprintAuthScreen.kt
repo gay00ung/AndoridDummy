@@ -32,6 +32,10 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
 import java.util.concurrent.Executor
+import androidx.compose.runtime.LaunchedEffect
+import com.gayoung.microinteractions.MicroInteractions
+import com.gayoung.microinteractions.core.*
+import com.gayoung.microinteractions.extensions.*
 
 /**
  * AndroidDummy
@@ -56,18 +60,24 @@ fun FingerprintAuthScreen() {
                 super.onAuthenticationError(errorCode, errString)
                 authStatus = "인증 오류: $errString"
                 isAuthenticating = false
+                // 에러 피드백
+                activity.window.decorView.triggerMicroInteraction(MicroInteraction.Failure)
             }
 
             override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
                 super.onAuthenticationSucceeded(result)
                 authStatus = "인증 성공!"
                 isAuthenticating = false
+                // 성공 피드백
+                activity.window.decorView.triggerMicroInteraction(MicroInteraction.Success)
             }
 
             override fun onAuthenticationFailed() {
                 super.onAuthenticationFailed()
                 authStatus = "인증 실패"
                 isAuthenticating = false
+                // 실패 피드백
+                activity.window.decorView.triggerMicroInteraction(MicroInteraction.Failure)
             }
         })
 
@@ -162,6 +172,7 @@ fun FingerprintAuthScreen() {
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(50.dp)
+                        .tapInteraction()
                 ) {
                     if (isAuthenticating) {
                         CircularProgressIndicator(

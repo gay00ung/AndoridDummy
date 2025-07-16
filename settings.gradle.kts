@@ -16,9 +16,12 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        maven { url = uri("https://jitpack.io") }
     }
 }
 
 rootProject.name = "AndroidDummy"
 include(":app")
+include(":microinteractions")
+project(":microinteractions").projectDir = File("../MicroInteractions/library")
  
