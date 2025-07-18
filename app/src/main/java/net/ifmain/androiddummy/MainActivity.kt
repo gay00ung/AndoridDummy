@@ -31,6 +31,7 @@ import net.ifmain.androiddummy.onnx.ui.AnimeFilterScreen
 import net.ifmain.androiddummy.sensor_ui.ui.TaroCardScreen
 import net.ifmain.androiddummy.sensor_ui.ui.TiltCardScreen
 import net.ifmain.androiddummy.microinteractions.MicroInteractionsShowcaseScreen
+import net.ifmain.androiddummy.touch_pattern.TouchMonitoringScreen
 
 class MainActivity : FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -75,7 +76,8 @@ fun MainApp() {
                 onNutritionChatClick = { navController.navigate("nutrition_chat") },
                 onSensorUiClick = { navController.navigate("sensor_ui") },
                 onTaroCardClick = { navController.navigate("taro_card") },
-                onMicroInteractionsClick = { navController.navigate("microinteractions") }
+                onMicroInteractionsClick = { navController.navigate("microinteractions") },
+                onTouchMonitoringClick = { navController.navigate("touch_monitoring") }
             )
         }
         composable("fingerprint") {
@@ -111,6 +113,11 @@ fun MainApp() {
                 onBack = { navController.popBackStack() }
             )
         }
+        composable("touch_monitoring") {
+            TouchMonitoringScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
     }
 }
 
@@ -123,7 +130,8 @@ fun HomeScreen(
     onNutritionChatClick: () -> Unit,
     onSensorUiClick: () -> Unit,
     onTaroCardClick: () -> Unit,
-    onMicroInteractionsClick: () -> Unit
+    onMicroInteractionsClick: () -> Unit,
+    onTouchMonitoringClick: () -> Unit
 ) {
     val cameraPermissionState = rememberPermissionState(
         Manifest.permission.CAMERA
@@ -262,6 +270,20 @@ fun HomeScreen(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text("MicroInteractions 쇼케이스")
+            }
+            
+            // 터치 모니터링 버튼
+            Button(
+                onClick = onTouchMonitoringClick,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+                    .microInteraction(MicroInteraction.Tap),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.tertiary
+                )
+            ) {
+                Text("터치 데이터 실시간 모니터링")
             }
 
             if (!cameraPermissionState.status.isGranted) {

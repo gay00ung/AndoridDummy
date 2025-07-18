@@ -22,6 +22,7 @@ import com.google.mlkit.vision.face.FaceDetection
 import com.google.mlkit.vision.face.FaceDetectorOptions
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import androidx.camera.core.ExperimentalGetImage
 
 /**
  * AndroidDummy
@@ -31,7 +32,7 @@ import java.util.concurrent.Executors
  * Description:
  */
 @SuppressLint("DefaultLocale")
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalGetImage::class)
 @Composable
 fun FaceDetectionScreen(
     onBack: () -> Unit
@@ -167,7 +168,6 @@ fun CameraPreview(
                     .build()
                     .also { analysis ->
                         analysis.setAnalyzer(cameraExecutor) { imageProxy ->
-                            @androidx.camera.core.ExperimentalGetImage
                             val mediaImage = imageProxy.image
                             if (mediaImage != null) {
                                 val image = InputImage.fromMediaImage(

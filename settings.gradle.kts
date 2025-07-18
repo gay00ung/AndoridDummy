@@ -23,5 +23,4 @@ dependencyResolutionManagement {
 rootProject.name = "AndroidDummy"
 include(":app")
 include(":microinteractions")
-project(":microinteractions").projectDir = File("../MicroInteractions/library")
  

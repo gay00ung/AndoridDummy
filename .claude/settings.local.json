@@ -1,7 +1,17 @@
 {
   "permissions": {
     "allow": [
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(./gradlew:*)",
+      "Bash(chmod:*)",
+      "WebFetch(domain:jitpack.io)",
+      "WebFetch(domain:api.github.com)",
+      "Bash(mv:*)",
+      "Bash(ls:*)",
+      "Bash(rm:*)",
+      "Bash(cp:*)",
+      "Bash(git add:*)"
     ],
     "deny": []
   }

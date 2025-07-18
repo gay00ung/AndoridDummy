@@ -1,0 +1,301 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<issues format="6" by="lint 8.11.1" type="baseline" client="gradle" dependencies="false" name="AGP (8.11.1)" variant="all" version="8.11.1">
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="            appendLine(&quot;- Average Touch Size: ${String.format(&quot;%.2f&quot;, profile.characteristics.avgTouchSize)}&quot;)"
+        errorLine2="                                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/net/ifmain/androiddummy/touch_pattern/ElderlyTouchAnalyzer.kt"
+            line="146"
+            column="49"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="            appendLine(&quot;- Tremor Level: ${String.format(&quot;%.2f&quot;, profile.characteristics.tremor)}&quot;)"
+        errorLine2="                                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/net/ifmain/androiddummy/touch_pattern/ElderlyTouchAnalyzer.kt"
+            line="147"
+            column="43"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="            appendLine(&quot;- Pressure Variance: ${String.format(&quot;%.2f&quot;, profile.characteristics.pressureVariance)}&quot;)"
+        errorLine2="                                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/net/ifmain/androiddummy/touch_pattern/ElderlyTouchAnalyzer.kt"
+            line="149"
+            column="48"/>
+    </issue>
+
+    <issue
+        id="DefaultLocale"
+        message="Implicitly using the default locale is a common source of bugs: Use `String.format(Locale, ...)` instead"
+        errorLine1="            appendLine(&quot;Tremor: ${String.format(&quot;%.2f&quot;, characteristics.tremor)}&quot;)"
+        errorLine2="                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/net/ifmain/androiddummy/touch_pattern/TouchPatternCollectorView.kt"
+            line="132"
+            column="35"/>
+    </issue>
+
+    <issue
+        id="OldTargetApi"
+        message="Not targeting the latest versions of Android; compatibility modes apply. Consider testing and updating this version. Consult the `android.os.Build.VERSION_CODES` javadoc for details."
+        errorLine1="        targetSdk = 35"
+        errorLine2="        ~~~~~~~~~~~~~~">
+        <location
+            file="build.gradle.kts"
+            line="14"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="RedundantLabel"
+        message="Redundant label can be removed"
+        errorLine1="            android:label=&quot;@string/app_name&quot;"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/AndroidManifest.xml"
+            line="34"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="AndroidGradlePluginVersion"
+        message="A newer version of Gradle than 8.13 is available: 8.14.3"
+        errorLine1="distributionUrl=https\://services.gradle.org/distributions/gradle-8.13-bin.zip"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="$HOME/Desktop/projects/AndoridDummy/gradle/wrapper/gradle-wrapper.properties"
+            line="4"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.lifecycle:lifecycle-runtime-compose than 2.9.1 is available: 2.9.2"
+        errorLine1="lifecycleRuntimeKtx = &quot;2.9.1&quot;"
+        errorLine2="                      ~~~~~~~">
+        <location
+            file="$HOME/Desktop/projects/AndoridDummy/gradle/libs.versions.toml"
+            line="14"
+            column="23"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.lifecycle:lifecycle-runtime-ktx than 2.9.1 is available: 2.9.2"
+        errorLine1="lifecycleRuntimeKtx = &quot;2.9.1&quot;"
+        errorLine2="                      ~~~~~~~">
+        <location
+            file="$HOME/Desktop/projects/AndoridDummy/gradle/libs.versions.toml"
+            line="14"
+            column="23"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.compose:compose-bom than 2025.06.01 is available: 2025.07.00"
+        errorLine1="composeBom = &quot;2025.06.01&quot;"
+        errorLine2="             ~~~~~~~~~~~~">
+        <location
+            file="$HOME/Desktop/projects/AndoridDummy/gradle/libs.versions.toml"
+            line="16"
+            column="14"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.navigation:navigation-compose than 2.9.1 is available: 2.9.2"
+        errorLine1="navigationCompose = &quot;2.9.1&quot;"
+        errorLine2="                    ~~~~~~~">
+        <location
+            file="$HOME/Desktop/projects/AndoridDummy/gradle/libs.versions.toml"
+            line="18"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.compose.runtime:runtime-livedata than 1.9.0-beta02 is available: 1.9.0-beta03"
+        errorLine1="runtimeLivedata = &quot;1.9.0-beta02&quot;"
+        errorLine2="                  ~~~~~~~~~~~~~~">
+        <location
+            file="$HOME/Desktop/projects/AndoridDummy/gradle/libs.versions.toml"
+            line="21"
+            column="19"/>
+    </issue>
+
+    <issue
+        id="UnsafeOptInUsageError"
+        message="This declaration is opt-in and its usage should be marked with `@androidx.camera.core.ExperimentalGetImage` or `@OptIn(markerClass = androidx.camera.core.ExperimentalGetImage.class)`"
+        errorLine1="                            val mediaImage = imageProxy.image"
+        errorLine2="                                                        ~~~~~">
+        <location
+            file="src/main/java/net/ifmain/androiddummy/mlkit/FaceDetectionScreen.kt"
+            line="171"
+            column="57"/>
+    </issue>
+
+    <issue
+        id="AutoboxingStateCreation"
+        message="Prefer `mutableFloatStateOf` instead of `mutableStateOf`"
+        errorLine1="                    var intensity by remember { mutableStateOf(0.8f) }"
+        errorLine2="                                                ~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/net/ifmain/androiddummy/microinteractions/MicroInteractionsShowcaseScreen.kt"
+            line="381"
+            column="49"/>
+    </issue>
+
+    <issue
+        id="AutoboxingStateCreation"
+        message="Prefer `mutableIntStateOf` instead of `mutableStateOf`"
+        errorLine1="    var lastCardIndex by remember { mutableStateOf(deckState.currentTopCardIndex) }"
+        errorLine2="                                    ~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/net/ifmain/androiddummy/sensor_ui/ui/TaroCardScreen.kt"
+            line="42"
+            column="37"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.color.purple_200` appears to be unused"
+        errorLine1="    &lt;color name=&quot;purple_200&quot;>#FFBB86FC&lt;/color>"
+        errorLine2="           ~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/colors.xml"
+            line="3"
+            column="12"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.color.purple_500` appears to be unused"
+        errorLine1="    &lt;color name=&quot;purple_500&quot;>#FF6200EE&lt;/color>"
+        errorLine2="           ~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/colors.xml"
+            line="4"
+            column="12"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.color.purple_700` appears to be unused"
+        errorLine1="    &lt;color name=&quot;purple_700&quot;>#FF3700B3&lt;/color>"
+        errorLine2="           ~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/colors.xml"
+            line="5"
+            column="12"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.color.teal_200` appears to be unused"
+        errorLine1="    &lt;color name=&quot;teal_200&quot;>#FF03DAC5&lt;/color>"
+        errorLine2="           ~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/colors.xml"
+            line="6"
+            column="12"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.color.teal_700` appears to be unused"
+        errorLine1="    &lt;color name=&quot;teal_700&quot;>#FF018786&lt;/color>"
+        errorLine2="           ~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/colors.xml"
+            line="7"
+            column="12"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.color.black` appears to be unused"
+        errorLine1="    &lt;color name=&quot;black&quot;>#FF000000&lt;/color>"
+        errorLine2="           ~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/colors.xml"
+            line="8"
+            column="12"/>
+    </issue>
+
+    <issue
+        id="UnusedResources"
+        message="The resource `R.color.white` appears to be unused"
+        errorLine1="    &lt;color name=&quot;white&quot;>#FFFFFFFF&lt;/color>"
+        errorLine2="           ~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/colors.xml"
+            line="9"
+            column="12"/>
+    </issue>
+
+    <issue
+        id="UseOfNonLambdaOffsetOverload"
+        message="State backed values should use the lambda overload of Modifier.offset"
+        errorLine1="                            .offset(x = ((tiltDirection * 46) + 46).dp)"
+        errorLine2="                             ~~~~~~">
+        <location
+            file="src/main/java/net/ifmain/androiddummy/sensor_ui/ui/TaroCardScreen.kt"
+            line="154"
+            column="30"/>
+    </issue>
+
+    <issue
+        id="UseOfNonLambdaOffsetOverload"
+        message="State backed values should use the lambda overload of Modifier.offset"
+        errorLine1="                        .offset("
+        errorLine2="                         ~~~~~~">
+        <location
+            file="src/main/java/net/ifmain/androiddummy/sensor_ui/ui/TiltCardScreen.kt"
+            line="110"
+            column="26"/>
+    </issue>
+
+    <issue
+        id="UseOfNonLambdaOffsetOverload"
+        message="State backed values should use the lambda overload of Modifier.offset"
+        errorLine1="            .offset("
+        errorLine2="             ~~~~~~">
+        <location
+            file="src/main/java/net/ifmain/androiddummy/sensor_ui/ui/TiltCardScreen.kt"
+            line="183"
+            column="14"/>
+    </issue>
+
+    <issue
+        id="UseTomlInstead"
+        message="Use version catalog instead"
+        errorLine1="    implementation(&quot;com.github.gay00ung:MicroInteractions:v1.0.2&quot;)"
+        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="build.gradle.kts"
+            line="92"
+            column="20"/>
+    </issue>
+
+    <issue
+        id="ClickableViewAccessibility"
+        message="Custom view `TouchPatternCollectorView` overrides `onTouchEvent` but not `performClick`"
+        errorLine1="    override fun onTouchEvent(event: MotionEvent): Boolean {"
+        errorLine2="                 ~~~~~~~~~~~~">
+        <location
+            file="src/main/java/net/ifmain/androiddummy/touch_pattern/TouchPatternCollectorView.kt"
+            line="48"
+            column="18"/>
+    </issue>
+
+</issues>
