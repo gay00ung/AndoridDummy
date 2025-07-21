@@ -1,6 +1,7 @@
 package net.ifmain.androiddummy.touch_pattern
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -41,6 +42,10 @@ fun TouchMonitoringScreen(
     var touchPath by remember { mutableStateOf(listOf<Offset>()) }
     var isCollecting by remember { mutableStateOf(true) }
     var velocityTracker by remember { mutableStateOf<VelocityTracker?>(null) }
+    
+    // 압력 센서 실제 지원 여부 추적
+    var pressureValues by remember { mutableStateOf(mutableSetOf<Float>()) }
+    var realPressureSupport by remember { mutableStateOf<Boolean?>(null) }
     
     // 행동 분석기
     val behaviorTracker = remember { UserBehaviorTracker(context) }
@@ -86,6 +91,15 @@ fun TouchMonitoringScreen(
                             @SuppressLint("ClickableViewAccessibility")
                             override fun onTouchEvent(event: MotionEvent): Boolean {
                                 if (isCollecting) {
+                                    // 압력 감지 테스트 코드
+                                    val pressure = event.pressure
+                                    val size = event.size
+                                    val touchMajor = event.touchMajor
+                                    
+                                    Log.d("Touch", "Pressure: $pressure")  // 대부분 1.0 또는 접촉면적 기반 값
+                                    Log.d("Touch", "Size: $size")          // 접촉 면적 기반
+                                    Log.d("Touch", "Major: $touchMajor")   // 실제 픽셀 단위 크기
+                                    
                                     // VelocityTracker 초기화 및 업데이트
                                     when (event.action) {
                                         MotionEvent.ACTION_DOWN -> {
@@ -110,7 +124,16 @@ fun TouchMonitoringScreen(
                                     val vx = velocityTracker?.xVelocity ?: 0f
                                     val vy = velocityTracker?.yVelocity ?: 0f
                                     
-                                    val data = extractTouchData(event, vx, vy)
+                                    // 압력 값 수집 (실제 지원 여부 판단용)
+                                    pressureValues.add(event.pressure)
+                                    if (pressureValues.size > 10 && realPressureSupport == null) {
+                                        // 10개 이상의 압력 값이 수집되면 실제 지원 여부 판단
+                                        val uniquePressures = pressureValues.distinct()
+                                        realPressureSupport = uniquePressures.size > 1 && 
+                                                            !uniquePressures.all { it == 1.0f || it == 0.0f }
+                                    }
+                                    
+                                    val data = extractTouchData(event, vx, vy, realPressureSupport)
                                     touchDataFlow.value = data
                                     
                                     // 행동 분석기에 데이터 전달
@@ -173,20 +196,34 @@ fun TouchMonitoringScreen(
                         DataRow("액션", data.action)
                         DataRow("포인터 수", data.pointerCount.toString())
                     }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    DataSection(title = "압력 센서 유/무") {
+                        val supportText = when {
+                            realPressureSupport == true -> "지원됨 (실제 감지)"
+                            realPressureSupport == false -> "미지원 (실제 감지)"
+                            data.pressureSupported -> "지원 가능"
+                            else -> "미지원"
+                        }
+                        DataRow("압력 지원", supportText)
+                        DataRow("기기명", data.deviceName)
+                        DataRow("압력 범위", "%.3f - %.3f".format(data.pressureMin, data.pressureMax))
+                        DataRow("정규화 압력", "%.5f".format(data.pressure))
+                        DataRow("Raw 압력", "%.5f".format(data.rawPressure))
+                        DataRow("event.pressure", "%.5f".format(data.eventPressure))
+                        if (pressureValues.size > 0) {
+                            DataRow("수집된 압력 값", "${pressureValues.size}개 (고유값: ${pressureValues.distinct().size}개)")
+                        }
+                    }
                     
                     Spacer(modifier = Modifier.height(16.dp))
                     
-                    DataSection(title = "압력 및 크기") {
-                        DataRow("압력 (정규화)", "%.5f".format(data.pressure))
-                        DataRow("압력 (Raw)", "%.5f".format(data.rawPressure))
-                        DataRow("압력 (event.pressure)", "%.5f".format(data.eventPressure))
-                        DataRow("압력 범위", "%.3f - %.3f".format(data.pressureMin, data.pressureMax))
-                        DataRow("압력 지원", if (data.pressureSupported) "지원됨" else "미지원")
-                        DataRow("기기명", data.deviceName)
-                        DataRow("터치 크기", "%.3f".format(data.touchSize))
+                    DataSection(title = "터치 크기 및 추정") {
+                        DataRow("터치 크기 (size)", "%.3f".format(data.touchSize))
                         DataRow("터치 영역", "Major: %.1f, Minor: %.1f".format(data.touchMajor, data.touchMinor))
-                        DataRow("추정 압력", "%.3f".format(data.estimatedPressure))
                         DataRow("접촉 면적", "%.1f px²".format(data.contactArea))
+                        DataRow("추정 압력", "%.3f".format(data.estimatedPressure))
                     }
                     
                     Spacer(modifier = Modifier.height(16.dp))
@@ -393,7 +430,7 @@ private fun DrawScope.drawTouchPath(path: List<Offset>) {
     }
 }
 
-private fun extractTouchData(event: MotionEvent, velocityX: Float, velocityY: Float): TouchMonitorData {
+private fun extractTouchData(event: MotionEvent, velocityX: Float, velocityY: Float, realPressureSupport: Boolean? = null): TouchMonitorData {
     val toolType = when (event.getToolType(0)) {
         MotionEvent.TOOL_TYPE_FINGER -> "손가락"
         MotionEvent.TOOL_TYPE_STYLUS -> "스타일러스"
@@ -432,9 +469,19 @@ private fun extractTouchData(event: MotionEvent, velocityX: Float, velocityY: Fl
     
     // 압력 감지 지원 여부 및 범위 확인
     val pressureRange = event.device?.getMotionRange(MotionEvent.AXIS_PRESSURE)
-    val pressureSupported = pressureRange != null
     val pressureMin = pressureRange?.min ?: 0f
     val pressureMax = pressureRange?.max ?: 1f
+    
+    // 더 정확한 압력 지원 검사
+    // 1. pressureRange가 존재하고
+    // 2. min과 max가 다르며 (같으면 압력 변화 없음)
+    // 3. 실제 압력 값이 변화하는지 확인 (realPressureSupport가 있으면 우선 사용)
+    val pressureSupported = realPressureSupport ?: (
+        pressureRange != null && 
+        pressureMin < pressureMax && 
+        (pressureMax - pressureMin) > 0.001f && // 부동소수점 오차 고려
+        pressureMax != 1.0f // 많은 기기가 0-1 고정값 사용
+    )
     
     // 다양한 방법으로 압력 값 가져오기
     val eventPressure = event.pressure // 기본 압력 값
@@ -454,11 +501,14 @@ private fun extractTouchData(event: MotionEvent, velocityX: Float, velocityY: Fl
     // 디버그: 압력 관련 모든 축 정보 출력
     println("=== 압력 디버그 정보 ===")
     println("Device: $deviceName")
-    println("Pressure supported: $pressureSupported")
+    println("Pressure supported: $pressureSupported (실제 감지: ${realPressureSupport ?: "검사중"})")
     println("Pressure range: $pressureMin - $pressureMax")
     println("event.pressure: $eventPressure")
     println("AXIS_PRESSURE: $rawPressure")
     println("Normalized: $normalizedPressure")
+    if (realPressureSupport != null && !realPressureSupport) {
+        println("** 압력 센서 미지원 - 터치 면적 기반 추정 사용 **")
+    }
     
     // 포인터별 압력도 확인
     if (event.pointerCount > 0) {
