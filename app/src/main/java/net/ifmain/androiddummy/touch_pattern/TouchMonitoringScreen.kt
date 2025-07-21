@@ -1,5 +1,6 @@
 package net.ifmain.androiddummy.touch_pattern
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -25,7 +26,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
 import kotlin.math.PI
-import kotlin.math.min
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,6 +42,11 @@ fun TouchMonitoringScreen(
     var isCollecting by remember { mutableStateOf(true) }
     var velocityTracker by remember { mutableStateOf<VelocityTracker?>(null) }
     
+    // 행동 분석기
+    val behaviorTracker = remember { UserBehaviorTracker(context) }
+    val behaviorAnalysis by behaviorTracker.behaviorAnalysis.collectAsState()
+    var showAnalysis by remember { mutableStateOf(false) }
+    
     Scaffold(
         topBar = {
             TopAppBar(
@@ -47,6 +54,15 @@ fun TouchMonitoringScreen(
                 navigationIcon = {
                     TextButton(onClick = onBack) {
                         Text("뒤로")
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { showAnalysis = !showAnalysis }) {
+                        Icon(
+                            imageVector = Icons.Default.Info,
+                            contentDescription = "행동 분석",
+                            tint = if (showAnalysis) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                        )
                     }
                 }
             )
@@ -67,6 +83,7 @@ fun TouchMonitoringScreen(
                 AndroidView(
                     factory = { ctx ->
                         object : View(ctx) {
+                            @SuppressLint("ClickableViewAccessibility")
                             override fun onTouchEvent(event: MotionEvent): Boolean {
                                 if (isCollecting) {
                                     // VelocityTracker 초기화 및 업데이트
@@ -95,6 +112,9 @@ fun TouchMonitoringScreen(
                                     
                                     val data = extractTouchData(event, vx, vy)
                                     touchDataFlow.value = data
+                                    
+                                    // 행동 분석기에 데이터 전달
+                                    behaviorTracker.processTouch(event, vx, vy)
                                 }
                                 return true
                             }
@@ -199,6 +219,103 @@ fun TouchMonitoringScreen(
                         DataRow("다운 시간", data.downTime.toString())
                         DataRow("이벤트 시간", data.eventTime.toString())
                         DataRow("지속 시간", "${data.eventTime - data.downTime} ms")
+                    }
+                    
+                    // 행동 분석 결과 표시
+                    if (showAnalysis && behaviorAnalysis != null) {
+                        Spacer(modifier = Modifier.height(16.dp))
+                        
+                        DataSection(title = "🧠 사용자 행동 분석") {
+                            // 손잡이 분석
+                            val handedness = behaviorAnalysis!!.handedness
+                            DataRow("손잡이", when(handedness.handedness) {
+                                HandednessAnalyzer.Handedness.RIGHT_HANDED -> "오른손잡이 (${(handedness.confidence * 100).toInt()}%)"
+                                HandednessAnalyzer.Handedness.LEFT_HANDED -> "왼손잡이 (${(handedness.confidence * 100).toInt()}%)"
+                                HandednessAnalyzer.Handedness.AMBIDEXTROUS -> "양손잡이 (${(handedness.confidence * 100).toInt()}%)"
+                                else -> "판별 중..."
+                            })
+                            
+                            // 손 사용 패턴
+                            val handUsage = behaviorAnalysis!!.handUsage
+                            DataRow("사용 패턴", when(handUsage.usageType) {
+                                HandUsageDetector.HandUsageType.ONE_HAND_THUMB -> "한손 엄지"
+                                HandUsageDetector.HandUsageType.ONE_HAND_INDEX -> "한손 검지"
+                                HandUsageDetector.HandUsageType.ONE_HAND_MULTI_FINGER -> "한손 여러 손가락"
+                                HandUsageDetector.HandUsageType.TWO_HANDS -> "양손"
+                                HandUsageDetector.HandUsageType.STYLUS -> "스타일러스"
+                                else -> "미확정"
+                            })
+                            
+                            // 그립 패턴
+                            val grip = behaviorAnalysis!!.gripType
+                            DataRow("그립 방식", when(grip.gripType) {
+                                GripPatternAnalyzer.GripType.TIGHT_GRIP -> "꽉 잡기"
+                                GripPatternAnalyzer.GripType.LOOSE_GRIP -> "느슨하게"
+                                GripPatternAnalyzer.GripType.CRADLE_GRIP -> "받쳐 잡기"
+                                GripPatternAnalyzer.GripType.PINCH_GRIP -> "집게 잡기"
+                                GripPatternAnalyzer.GripType.PALM_GRIP -> "손바닥 잡기"
+                                GripPatternAnalyzer.GripType.FINGERTIP_GRIP -> "손가락 끝"
+                                GripPatternAnalyzer.GripType.NO_GRIP -> "평평한 곳에 놓음"
+                                else -> "일반"
+                            })
+                            
+                            // 스트레스 레벨
+                            val stress = behaviorAnalysis!!.stressLevel
+                            DataRow("스트레스", when(stress.category) {
+                                UserBehaviorTracker.StressCategory.RELAXED -> "😌 편안함"
+                                UserBehaviorTracker.StressCategory.NORMAL -> "😊 보통"
+                                UserBehaviorTracker.StressCategory.FOCUSED -> "🎯 집중"
+                                UserBehaviorTracker.StressCategory.STRESSED -> "😰 스트레스"
+                                UserBehaviorTracker.StressCategory.FRUSTRATED -> "😤 좌절/화남"
+                            } + " (${(stress.level * 100).toInt()}%)")
+                            
+                            // 노인 사용자 감지
+                            behaviorAnalysis!!.elderlyProfile?.let { elderly ->
+                                if (elderly.isLikelyElderly) {
+                                    DataRow("연령대", "노인 사용자 가능성 (${(elderly.confidenceScore * 100).toInt()}%)")
+                                }
+                            }
+                            
+                            // 이상 행동 점수
+                            if (behaviorAnalysis!!.anomalyScore > 0.5f) {
+                                DataRow("⚠️ 이상 패턴", "${(behaviorAnalysis!!.anomalyScore * 100).toInt()}%")
+                            }
+                        }
+                        
+                        // 권장사항
+                        if (behaviorAnalysis!!.recommendations.isNotEmpty()) {
+                            Spacer(modifier = Modifier.height(16.dp))
+                            DataSection(title = "💡 권장사항") {
+                                behaviorAnalysis!!.recommendations.forEach { recommendation ->
+                                    Text(
+                                        text = "• $recommendation",
+                                        fontSize = 13.sp,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.padding(vertical = 2.dp)
+                                    )
+                                }
+                            }
+                        }
+                        
+                        // 세부 분석 데이터
+                        Spacer(modifier = Modifier.height(16.dp))
+                        DataSection(title = "📊 세부 분석") {
+                            DataRow("전체 신뢰도", "${(behaviorAnalysis!!.behaviorConfidence * 100).toInt()}%")
+                            DataRow("세션 시간", "${behaviorAnalysis!!.sessionDuration / 1000}초")
+                            DataRow("터치 횟수", behaviorAnalysis!!.touchCount.toString())
+                            
+                            // 손 사용 세부 정보
+                            val usage = behaviorAnalysis!!.handUsage.analysis
+                            DataRow("터치 분포 너비", "%.0f px".format(usage.touchSpreadWidth))
+                            DataRow("터치 분포 높이", "%.0f px".format(usage.touchSpreadHeight))
+                            DataRow("평균 도달 거리", "%.0f px".format(usage.averageReachDistance))
+                            
+                            // 그립 세부 정보
+                            val gripAnalysis = behaviorAnalysis!!.gripType.analysis
+                            DataRow("평균 압력", "%.2f".format(gripAnalysis.averagePressure))
+                            DataRow("움직임 안정성", "%.2f".format(gripAnalysis.movementStability))
+                            DataRow("그립 강도", "%.2f".format(gripAnalysis.gripStrength))
+                        }
                     }
                 }
             }
@@ -366,7 +483,7 @@ private fun extractTouchData(event: MotionEvent, velocityX: Float, velocityY: Fl
             // 더 부드러운 곡선으로 매핑
             val normalized = (contactArea - minArea) / (maxArea - minArea)
             // 제곱근을 사용해 중간 값들을 더 높게 조정
-            0.1f + kotlin.math.sqrt(normalized) * 0.9f
+            0.1f + sqrt(normalized) * 0.9f
         }
     }
     
