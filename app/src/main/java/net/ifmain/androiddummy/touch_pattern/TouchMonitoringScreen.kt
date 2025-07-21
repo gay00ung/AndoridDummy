@@ -2,6 +2,7 @@ package net.ifmain.androiddummy.touch_pattern
 
 import android.annotation.SuppressLint
 import android.util.Log
+import android.view.GestureDetector
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -30,6 +31,7 @@ import kotlin.math.PI
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 
+@SuppressLint("MutableCollectionMutableState")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TouchMonitoringScreen(
@@ -51,7 +53,7 @@ fun TouchMonitoringScreen(
     val behaviorTracker = remember { UserBehaviorTracker(context) }
     val behaviorAnalysis by behaviorTracker.behaviorAnalysis.collectAsState()
     var showAnalysis by remember { mutableStateOf(false) }
-    
+
     Scaffold(
         topBar = {
             TopAppBar(
