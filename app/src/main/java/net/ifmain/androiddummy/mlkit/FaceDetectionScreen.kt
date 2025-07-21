@@ -12,7 +12,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
@@ -32,7 +31,7 @@ import androidx.camera.core.ExperimentalGetImage
  * Description:
  */
 @SuppressLint("DefaultLocale")
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalGetImage::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FaceDetectionScreen(
     onBack: () -> Unit
@@ -70,7 +69,7 @@ fun FaceDetectionScreen(
                     },
                     faces = detectedFaces
                 )
-                
+
                 // Face overlay
                 imageSourceInfo?.let { (width, height) ->
                     FaceOverlay(
@@ -120,13 +119,14 @@ fun FaceDetectionScreen(
     }
 }
 
+@androidx.annotation.OptIn(ExperimentalGetImage::class)
 @Composable
 fun CameraPreview(
     onFaceDetected: (List<Face>, Int, Int) -> Unit,
     faces: List<Face>
 ) {
     val context = LocalContext.current
-    val lifecycleOwner = LocalLifecycleOwner.current
+    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
     val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }
     var preview by remember { mutableStateOf<Preview?>(null) }
     val executor = ContextCompat.getMainExecutor(context)

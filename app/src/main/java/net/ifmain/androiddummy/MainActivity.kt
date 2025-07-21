@@ -32,6 +32,7 @@ import net.ifmain.androiddummy.sensor_ui.ui.TaroCardScreen
 import net.ifmain.androiddummy.sensor_ui.ui.TiltCardScreen
 import net.ifmain.androiddummy.microinteractions.MicroInteractionsShowcaseScreen
 import net.ifmain.androiddummy.touch_pattern.TouchMonitoringScreen
+import net.ifmain.androiddummy.face_rotation.ui.FaceVerificationScreen
 
 class MainActivity : FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -77,7 +78,8 @@ fun MainApp() {
                 onSensorUiClick = { navController.navigate("sensor_ui") },
                 onTaroCardClick = { navController.navigate("taro_card") },
                 onMicroInteractionsClick = { navController.navigate("microinteractions") },
-                onTouchMonitoringClick = { navController.navigate("touch_monitoring") }
+                onTouchMonitoringClick = { navController.navigate("touch_monitoring") },
+                onFaceVerificationClick = { navController.navigate("face_verification") }
             )
         }
         composable("fingerprint") {
@@ -118,6 +120,11 @@ fun MainApp() {
                 onBack = { navController.popBackStack() }
             )
         }
+        composable("face_verification") {
+            FaceVerificationScreen(
+                onVerificationComplete = { navController.popBackStack() }
+            )
+        }
     }
 }
 
@@ -131,7 +138,8 @@ fun HomeScreen(
     onSensorUiClick: () -> Unit,
     onTaroCardClick: () -> Unit,
     onMicroInteractionsClick: () -> Unit,
-    onTouchMonitoringClick: () -> Unit
+    onTouchMonitoringClick: () -> Unit,
+    onFaceVerificationClick: () -> Unit
 ) {
     val cameraPermissionState = rememberPermissionState(
         Manifest.permission.CAMERA
@@ -209,9 +217,9 @@ fun HomeScreen(
                     .microInteraction(
                         MicroInteraction.Custom(
                             customName = "chat",
-                            feedback = com.gayoung.microinteractions.core.FeedbackType.combined(
-                                com.gayoung.microinteractions.core.FeedbackType.haptic(com.gayoung.microinteractions.core.HapticType.LIGHT),
-                                com.gayoung.microinteractions.core.FeedbackType.animation(com.gayoung.microinteractions.core.AnimationType.PULSE)
+                            feedback = FeedbackType.combined(
+                                FeedbackType.haptic(HapticType.LIGHT),
+                                FeedbackType.animation(AnimationType.PULSE)
                             )
                         )
                     )
@@ -226,7 +234,7 @@ fun HomeScreen(
                     .padding(vertical = 8.dp)
                     .microInteraction(
                         interaction = MicroInteraction.Refresh,
-                        trigger = com.gayoung.microinteractions.extensions.ComposeTrigger.OnClick
+                        trigger = ComposeTrigger.OnClick
                     )
             ) {
                 Text("센서 반응형 UI")
@@ -284,6 +292,34 @@ fun HomeScreen(
                 )
             ) {
                 Text("터치 데이터 실시간 모니터링")
+            }
+            
+            // 얼굴 회전 인증 버튼
+            Button(
+                onClick = {
+                    if (cameraPermissionState.status.isGranted) {
+                        onFaceVerificationClick()
+                    } else {
+                        cameraPermissionState.launchPermissionRequest()
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+                    .microInteraction(
+                        MicroInteraction.Custom(
+                            customName = "face_verify",
+                            feedback = FeedbackType.combined(
+                                FeedbackType.haptic(HapticType.HEAVY),
+                                FeedbackType.animation(AnimationType.SCALE)
+                            )
+                        )
+                    ),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.secondary
+                )
+            ) {
+                Text("얼굴 회전 인증")
             }
 
             if (!cameraPermissionState.status.isGranted) {
