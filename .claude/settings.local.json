@@ -11,7 +11,8 @@
       "Bash(ls:*)",
       "Bash(rm:*)",
       "Bash(cp:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "mcp__ide__getDiagnostics"
     ],
     "deny": []
   }

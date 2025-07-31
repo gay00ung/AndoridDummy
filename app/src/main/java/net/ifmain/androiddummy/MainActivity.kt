@@ -5,6 +5,8 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
@@ -33,6 +35,7 @@ import net.ifmain.androiddummy.sensor_ui.ui.TiltCardScreen
 import net.ifmain.androiddummy.microinteractions.MicroInteractionsShowcaseScreen
 import net.ifmain.androiddummy.touch_pattern.TouchMonitoringScreen
 import net.ifmain.androiddummy.face_rotation.ui.FaceVerificationScreen
+import net.ifmain.androiddummy.interactive_ui.GenericShapeTest
 
 class MainActivity : FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -79,7 +82,8 @@ fun MainApp() {
                 onTaroCardClick = { navController.navigate("taro_card") },
                 onMicroInteractionsClick = { navController.navigate("microinteractions") },
                 onTouchMonitoringClick = { navController.navigate("touch_monitoring") },
-                onFaceVerificationClick = { navController.navigate("face_verification") }
+                onFaceVerificationClick = { navController.navigate("face_verification") },
+                onInteractiveUiClick = { navController.navigate("interactive_ui") }
             )
         }
         composable("fingerprint") {
@@ -125,6 +129,9 @@ fun MainApp() {
                 onVerificationComplete = { navController.popBackStack() }
             )
         }
+        composable("interactive_ui") {
+            GenericShapeTest()
+        }
     }
 }
 
@@ -139,7 +146,8 @@ fun HomeScreen(
     onTaroCardClick: () -> Unit,
     onMicroInteractionsClick: () -> Unit,
     onTouchMonitoringClick: () -> Unit,
-    onFaceVerificationClick: () -> Unit
+    onFaceVerificationClick: () -> Unit,
+    onInteractiveUiClick: () -> Unit
 ) {
     val cameraPermissionState = rememberPermissionState(
         Manifest.permission.CAMERA
@@ -163,9 +171,9 @@ fun HomeScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom))
+                .verticalScroll(rememberScrollState())
                 .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Button(
                 onClick = onFingerprintClick,
@@ -320,6 +328,28 @@ fun HomeScreen(
                 )
             ) {
                 Text("얼굴 회전 인증")
+            }
+
+            // Interactive UI 테스트 버튼
+            Button(
+                onClick = onInteractiveUiClick,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+                    .microInteraction(
+                        MicroInteraction.Custom(
+                            customName = "face_verify",
+                            feedback = FeedbackType.combined(
+                                FeedbackType.haptic(HapticType.HEAVY),
+                                FeedbackType.animation(AnimationType.SCALE)
+                            )
+                        )
+                    ),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.secondary
+                )
+            ) {
+                Text("Interactive UI 테스트")
             }
 
             if (!cameraPermissionState.status.isGranted) {

@@ -99,6 +99,8 @@ fun FaceGuideOverlay(
                         rightEyeOpen = face.rightEyeOpenProbability ?: 1f,
                         isValid = currentStep.validation(face)
                     )
+                } else -> {
+                    // 다른 단계에서는 눈 깜빡임이나 웃음 가이드를 그리지 않음
                 }
             }
         } ?: run {
