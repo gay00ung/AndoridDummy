@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -40,7 +41,7 @@ import kotlin.math.abs
 @Composable
 fun GenericShapeTest() {
     val red = Color(0xFFC41001)
-    val items = remember { (1..10).map { "${it}번" } }
+    val items = remember { (1..50).map { "${it}번" } }
     val listState = rememberLazyListState()
 
     val visibleItemsInfo by remember { derivedStateOf { listState.layoutInfo.visibleItemsInfo } }
@@ -148,8 +149,7 @@ fun TextBox(
             .scale(scale)
             .alpha(alpha)
     ) {
-        Text(
-            text = text,
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .drawBehind {
@@ -162,9 +162,13 @@ fun TextBox(
                         color = Color.Black
                     )
                 },
-            style = MaterialTheme.typography.headlineMedium,
-            textAlign = TextAlign.Center,
-            color = Color.White
-        )
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = text,
+                style = MaterialTheme.typography.headlineMedium,
+                color = Color.White
+            )
+        }
     }
 }
