@@ -36,6 +36,8 @@ import net.ifmain.androiddummy.microinteractions.MicroInteractionsShowcaseScreen
 import net.ifmain.androiddummy.touch_pattern.TouchMonitoringScreen
 import net.ifmain.androiddummy.face_rotation.ui.FaceVerificationScreen
 import net.ifmain.androiddummy.interactive_ui.GenericShapeTest
+import net.ifmain.androiddummy.gemini_nano.GeminiNanoScreen
+import android.util.Log
 
 class MainActivity : FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -83,7 +85,8 @@ fun MainApp() {
                 onMicroInteractionsClick = { navController.navigate("microinteractions") },
                 onTouchMonitoringClick = { navController.navigate("touch_monitoring") },
                 onFaceVerificationClick = { navController.navigate("face_verification") },
-                onInteractiveUiClick = { navController.navigate("interactive_ui") }
+                onInteractiveUiClick = { navController.navigate("interactive_ui") },
+                onGeminiNanoClick = { navController.navigate("gemini_nano") }
             )
         }
         composable("fingerprint") {
@@ -132,6 +135,10 @@ fun MainApp() {
         composable("interactive_ui") {
             GenericShapeTest()
         }
+        composable("gemini_nano") {
+            Log.d("MainActivity", "gemini_nano composable 진입")
+            GeminiNanoScreen()
+        }
     }
 }
 
@@ -147,7 +154,8 @@ fun HomeScreen(
     onMicroInteractionsClick: () -> Unit,
     onTouchMonitoringClick: () -> Unit,
     onFaceVerificationClick: () -> Unit,
-    onInteractiveUiClick: () -> Unit
+    onInteractiveUiClick: () -> Unit,
+    onGeminiNanoClick: () -> Unit
 ) {
     val cameraPermissionState = rememberPermissionState(
         Manifest.permission.CAMERA
@@ -350,6 +358,31 @@ fun HomeScreen(
                 )
             ) {
                 Text("Interactive UI 테스트")
+            }
+
+            // Gemini Nano 테스트 버튼
+            Button(
+                onClick = {
+                    Log.d("MainActivity", "Gemini Nano 버튼 클릭!")
+                    onGeminiNanoClick()
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+                    .microInteraction(
+                        MicroInteraction.Custom(
+                            customName = "ai_test",
+                            feedback = FeedbackType.combined(
+                                FeedbackType.haptic(HapticType.MEDIUM),
+                                FeedbackType.animation(AnimationType.PULSE)
+                            )
+                        )
+                    ),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
+            ) {
+                Text("Gemini Nano AI 테스트")
             }
 
             if (!cameraPermissionState.status.isGranted) {

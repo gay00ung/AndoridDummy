@@ -10,8 +10,8 @@ android {
 
     defaultConfig {
         applicationId = "net.ifmain.androiddummy"
-        minSdk = 30
-        targetSdk = 35
+        minSdk = 31
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
 
@@ -93,4 +93,8 @@ dependencies {
 
     // Lottie
     implementation(libs.lottie.compose)
+
+    // Gemini Nano
+    implementation("com.google.ai.edge.aicore:aicore:0.0.1-exp02")
+
 }
