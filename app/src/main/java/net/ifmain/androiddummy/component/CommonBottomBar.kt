@@ -1,16 +1,18 @@
 package net.ifmain.androiddummy.component
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.GenericShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -19,6 +21,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 
@@ -35,6 +39,30 @@ fun CommonBottomBar(
     var inputText by remember { mutableStateOf("") }
     val focusManager = LocalFocusManager.current
 
+    val cloudShape = remember {
+        GenericShape { size, _ ->
+            val width = size.width
+            val height = size.height
+
+            addOval(Rect(
+                width * 0.05f, height * 0.2f,
+                width * 0.5f, height * 0.8f
+            ))
+            addOval(Rect(
+                width * 0.3f, height * 0.0f,
+                width * 0.7f, height * 0.7f
+            ))
+            addOval(Rect(
+                width * 0.5f, height * 0.15f,
+                width * 0.9f, height * 0.7f
+            ))
+            addOval(Rect(
+                width * 0.7f, height * 0.3f,
+                width * 1.0f, height * 0.8f
+            ))
+        }
+    }
+
     BottomAppBar {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -44,8 +72,18 @@ fun CommonBottomBar(
                 value = inputText,
                 onValueChange = { inputText = it },
                 placeholder = { Text("메시지를 입력하세요...") },
-                modifier = Modifier.weight(1f),
-                singleLine = true
+                modifier = Modifier
+                    .weight(1f)
+                    .background(
+                        color = Color(0xFF87CEEB),
+                        shape = cloudShape
+                    ),
+                singleLine = true,
+                shape = cloudShape,
+                colors = OutlinedTextFieldDefaults.colors(
+                    unfocusedBorderColor = Color.Transparent,
+                    focusedBorderColor = Color.Transparent
+                )
             )
 
             Spacer(modifier = Modifier.width(8.dp))

@@ -97,4 +97,7 @@ dependencies {
     // Gemini Nano
     implementation("com.google.ai.edge.aicore:aicore:0.0.1-exp02")
 
+    // Generic Shapes
+    implementation(libs.androidx.graphics.shapes)
+
 }
