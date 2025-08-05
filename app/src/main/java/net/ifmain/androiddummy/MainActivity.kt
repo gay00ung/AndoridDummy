@@ -38,6 +38,7 @@ import net.ifmain.androiddummy.face_rotation.ui.FaceVerificationScreen
 import net.ifmain.androiddummy.interactive_ui.GenericShapeTest
 import net.ifmain.androiddummy.gemini_nano.GeminiNanoScreen
 import android.util.Log
+import net.ifmain.androiddummy.interactive_ui.GenericShapeTest2
 
 class MainActivity : FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -86,6 +87,7 @@ fun MainApp() {
                 onTouchMonitoringClick = { navController.navigate("touch_monitoring") },
                 onFaceVerificationClick = { navController.navigate("face_verification") },
                 onInteractiveUiClick = { navController.navigate("interactive_ui") },
+                onInteractiveUi2Click = { navController.navigate("interactive_ui_2") },
                 onGeminiNanoClick = { navController.navigate("gemini_nano") }
             )
         }
@@ -135,6 +137,11 @@ fun MainApp() {
         composable("interactive_ui") {
             GenericShapeTest()
         }
+        composable ("interactive_ui_2") {
+            GenericShapeTest2(
+                onBack = { navController.popBackStack() }
+            )
+        }
         composable("gemini_nano") {
             Log.d("MainActivity", "gemini_nano composable 진입")
             GeminiNanoScreen()
@@ -155,6 +162,7 @@ fun HomeScreen(
     onTouchMonitoringClick: () -> Unit,
     onFaceVerificationClick: () -> Unit,
     onInteractiveUiClick: () -> Unit,
+    onInteractiveUi2Click: () -> Unit,
     onGeminiNanoClick: () -> Unit
 ) {
     val cameraPermissionState = rememberPermissionState(
@@ -358,6 +366,28 @@ fun HomeScreen(
                 )
             ) {
                 Text("Interactive UI 테스트")
+            }
+
+            // Interactive UI 2 테스트 버튼
+            Button(
+                onClick = onInteractiveUi2Click,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+                    .microInteraction(
+                        MicroInteraction.Custom(
+                            customName = "face_verify",
+                            feedback = FeedbackType.combined(
+                                FeedbackType.haptic(HapticType.HEAVY),
+                                FeedbackType.animation(AnimationType.SCALE)
+                            )
+                        )
+                    ),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.secondary
+                )
+            ) {
+                Text("Interactive UI 2 테스트")
             }
 
             // Gemini Nano 테스트 버튼
