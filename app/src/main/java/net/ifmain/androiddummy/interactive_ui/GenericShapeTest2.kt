@@ -63,13 +63,10 @@ fun GenericShapeTest2(
         listState.layoutInfo.viewportSize.height / 116.dp.toPx()
     }
 
-    var message by remember { mutableStateOf("") }
-
     LaunchedEffect(isAutoScrolling) {
         if (isAutoScrolling) {
             while (isAutoScrolling) {
                 delay(500)
-                items.add("${itemCounter}번")
                 itemCounter++
 
                 if (items.size > canFitOnScreen) {

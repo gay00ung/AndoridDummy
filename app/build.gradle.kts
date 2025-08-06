@@ -51,7 +51,7 @@ dependencies {
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
-    implementation(libs.androidx.material3)
+//    implementation(libs.androidx.material3)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -61,6 +61,10 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation(libs.androidx.runtime.livedata)
     implementation(libs.androidx.lifecycle.runtime.compose)
+
+    // Experimental Material3
+    implementation("androidx.compose.material3:material3:1.5.0-alpha01")
+    implementation("androidx.compose.material:material-icons-extended:1.7.8")
 
     // Biometric
     implementation (libs.androidx.biometric.ktx)
@@ -95,7 +99,7 @@ dependencies {
     implementation(libs.lottie.compose)
 
     // Gemini Nano
-    implementation("com.google.ai.edge.aicore:aicore:0.0.1-exp02")
+    implementation(libs.aicore)
 
     // Generic Shapes
     implementation(libs.androidx.graphics.shapes)
