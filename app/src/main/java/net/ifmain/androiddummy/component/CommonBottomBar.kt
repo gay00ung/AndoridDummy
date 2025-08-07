@@ -28,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
 
@@ -54,31 +55,63 @@ fun CommonBottomBar(
             addOval(
                 Rect(
                     width * 0.05f, height * 0.2f,
-                    width * 0.5f, height * 0.8f
+                    width * 0.25f, height * 0.9f
+                )
+            )
+            addOval(
+                Rect(
+                    width * 0.15f, height * 0.0f,
+                    width * 0.3f, height * 0.7f
+                )
+            )
+            addOval(
+                Rect(
+                    width * 0.15f, height * 0.2f,
+                    width * 0.4f, height * 0.95f
                 )
             )
             addOval(
                 Rect(
                     width * 0.3f, height * 0.0f,
-                    width * 0.7f, height * 0.7f
+                    width * 0.5f, height * 0.8f
                 )
             )
             addOval(
                 Rect(
-                    width * 0.5f, height * 0.15f,
-                    width * 0.9f, height * 0.7f
+                    width * 0.35f, height * 0.2f,
+                    width * 0.6f, height * 0.9f
                 )
             )
             addOval(
                 Rect(
-                    width * 0.7f, height * 0.3f,
-                    width * 1.0f, height * 0.8f
+                    width * 0.5f, height * 0.03f,
+                    width * 0.75f, height * 0.75f
+                )
+            )
+            addOval(
+                Rect(
+                    width * 0.6f, height * 0.2f,
+                    width * 0.8f, height * 1f
+                )
+            )
+            addOval(
+                Rect(
+                    width * 0.7f, height * 0f,
+                    width * 0.85f, height * 0.65f
+                )
+            )
+            addOval(
+                Rect(
+                    width * 0.77f, height * 0.1f,
+                    width * 0.99f, height * 0.85f
                 )
             )
         }
     }
 
-    BottomAppBar {
+    BottomAppBar(
+        containerColor = Color.White
+    ) {
         Column {
             if (isTyping) {
                 LinearWavyProgressIndicator(
@@ -93,8 +126,10 @@ fun CommonBottomBar(
                 )
             }
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color.Transparent),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 OutlinedTextField(
                     value = inputText,
@@ -131,10 +166,21 @@ fun CommonBottomBar(
                 ) {
                     Icon(
                         Icons.AutoMirrored.Filled.Send,
-                        contentDescription = "전송"
+                        contentDescription = "전송",
+                        tint = Color(0xFF87CEEB)
                     )
                 }
             }
         }
     }
+}
+
+@Preview
+@Composable
+fun CommonBottomBarPreview() {
+    CommonBottomBar(
+        onSend = { message ->
+            // Handle send action
+        }
+    )
 }
