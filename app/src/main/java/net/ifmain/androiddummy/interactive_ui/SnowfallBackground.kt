@@ -3,7 +3,6 @@ package net.ifmain.androiddummy.interactive_ui
 import android.annotation.SuppressLint
 import android.graphics.Color
 import android.graphics.Paint
-import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -48,23 +47,12 @@ fun SnowfallBackground() {
 
     val animationTime by infiniteTransition.animateFloat(
         initialValue = 0f,
-        targetValue = 1f,
+        targetValue = 10000f,
         animationSpec = infiniteRepeatable(
             animation = tween(durationMillis = 20000, easing = LinearEasing),
             repeatMode = RepeatMode.Restart
         )
     )
-
-    // 바람 효과
-    val windStrength by infiniteTransition.animateFloat(
-        initialValue = -1f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(5000, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        )
-    )
-
 
     LaunchedEffect(Unit) {
         // 초기 눈송이 생성
@@ -81,24 +69,14 @@ fun SnowfallBackground() {
         }
     }
 
-    // 애니메이션 업데이트
-    LaunchedEffect(animationTime) {
-        snowflakes.forEachIndexed { index, snowflake ->
-            snowflake.y += snowflake.speed
-            snowflake.x += sin(snowflake.y * 0.01f) * 0.5f // 좌우 흔들림
-
-            // 화면 밖으로 나가면 위로 리셋
-            if (snowflake.y > screenHeightPx) {
-                snowflake.y = -20f
-                snowflake.x = Random.nextFloat() * screenWidthPx
-            }
-        }
-    }
-
     Canvas(
         modifier = Modifier.fillMaxSize()
     ) {
-        snowflakes.forEach { snowflake ->
+        // animationTime을 사용하여 실시간으로 위치 계산
+        snowflakes.forEachIndexed { index, snowflake ->
+            val currentY = (snowflake.y + animationTime * snowflake.speed * 0.1f) % (screenHeightPx + 50f)
+            val currentX = snowflake.x + sin(currentY * 0.01f) * 10f
+            
             drawIntoCanvas { canvas ->
                 val paint = Paint().apply {
                     color = Color.WHITE
@@ -107,8 +85,8 @@ fun SnowfallBackground() {
                 }
                 canvas.nativeCanvas.drawText(
                     "❄️",
-                    snowflake.x,
-                    snowflake.y,
+                    currentX,
+                    currentY,
                     paint
                 )
             }
