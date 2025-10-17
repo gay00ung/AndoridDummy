@@ -39,6 +39,7 @@ import net.ifmain.androiddummy.interactive_ui.GenericShapeTest
 import net.ifmain.androiddummy.gemini_nano.GeminiNanoScreen
 import android.util.Log
 import net.ifmain.androiddummy.interactive_ui.GenericShapeTest2
+import net.ifmain.androiddummy.sign_up.SignUpGraph
 
 class MainActivity : FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -88,7 +89,8 @@ fun MainApp() {
                 onFaceVerificationClick = { navController.navigate("face_verification") },
                 onInteractiveUiClick = { navController.navigate("interactive_ui") },
                 onInteractiveUi2Click = { navController.navigate("interactive_ui_2") },
-                onGeminiNanoClick = { navController.navigate("gemini_nano") }
+                onGeminiNanoClick = { navController.navigate("gemini_nano") },
+                onSignUpClick = { navController.navigate("sign_up") },
             )
         }
         composable("fingerprint") {
@@ -146,6 +148,19 @@ fun MainApp() {
             Log.d("MainActivity", "gemini_nano composable 진입")
             GeminiNanoScreen()
         }
+        composable("sign_up") {
+            SignUpGraph(
+                onFinishAll = {
+                    val popped = navController.popBackStack("home", inclusive = false)
+                    if (!popped) {
+                        navController.navigate("home") {
+                            popUpTo("home") { inclusive = true }
+                            launchSingleTop = true
+                        }
+                    }
+                }
+            )
+        }
     }
 }
 
@@ -163,7 +178,8 @@ fun HomeScreen(
     onFaceVerificationClick: () -> Unit,
     onInteractiveUiClick: () -> Unit,
     onInteractiveUi2Click: () -> Unit,
-    onGeminiNanoClick: () -> Unit
+    onGeminiNanoClick: () -> Unit,
+    onSignUpClick: () -> Unit
 ) {
     val cameraPermissionState = rememberPermissionState(
         Manifest.permission.CAMERA
@@ -413,6 +429,31 @@ fun HomeScreen(
                 )
             ) {
                 Text("Gemini Nano AI 테스트")
+            }
+
+            // 회원가입 플로우 테스트 버튼
+            Button(
+                onClick = {
+                    Log.d("MainActivity", "Sign Up 버튼 클릭!")
+                    onSignUpClick()
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+                    .microInteraction(
+                        MicroInteraction.Custom(
+                            customName = "sign_up",
+                            feedback = FeedbackType.combined(
+                                FeedbackType.haptic(HapticType.MEDIUM),
+                                FeedbackType.animation(AnimationType.PULSE)
+                            )
+                        )
+                    ),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
+            ) {
+                Text("회원가입 플로우 테스트")
             }
 
             if (!cameraPermissionState.status.isGranted) {

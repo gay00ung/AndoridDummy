@@ -63,8 +63,8 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.compose)
 
     // Experimental Material3
-    implementation("androidx.compose.material3:material3:1.5.0-alpha01")
-    implementation("androidx.compose.material:material-icons-extended:1.7.8")
+    implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.material.icons.extended)
 
     // Biometric
     implementation (libs.androidx.biometric.ktx)
@@ -103,5 +103,8 @@ dependencies {
 
     // Generic Shapes
     implementation(libs.androidx.graphics.shapes)
+
+    // ViewModel
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
 
 }
