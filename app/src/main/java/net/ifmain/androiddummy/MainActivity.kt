@@ -38,6 +38,7 @@ import net.ifmain.androiddummy.face_rotation.ui.FaceVerificationScreen
 import net.ifmain.androiddummy.interactive_ui.GenericShapeTest
 import net.ifmain.androiddummy.gemini_nano.GeminiNanoScreen
 import android.util.Log
+import net.ifmain.androiddummy.glass_screen.ShadowsScreen
 import net.ifmain.androiddummy.interactive_ui.GenericShapeTest2
 import net.ifmain.androiddummy.sign_up.InteractiveSignUp
 import net.ifmain.androiddummy.sign_up.SignUpGraph
@@ -92,7 +93,8 @@ fun MainApp() {
                 onInteractiveUi2Click = { navController.navigate("interactive_ui_2") },
                 onGeminiNanoClick = { navController.navigate("gemini_nano") },
                 onSignUpClick = { navController.navigate("sign_up") },
-                onInteractiveSignUp = { navController.navigate("interactive_sign_up") }
+                onInteractiveSignUp = { navController.navigate("interactive_sign_up") },
+                onGlassScreenClick = { navController.navigate("glass_screen") }
 
             )
         }
@@ -164,6 +166,9 @@ fun MainApp() {
                 }
             )
         }
+        composable("glass_screen") {
+            ShadowsScreen()
+        }
         composable("interactive_sign_up") {
             InteractiveSignUp()
         }
@@ -186,7 +191,8 @@ fun HomeScreen(
     onInteractiveUi2Click: () -> Unit,
     onGeminiNanoClick: () -> Unit,
     onSignUpClick: () -> Unit,
-    onInteractiveSignUp: () -> Unit
+    onInteractiveSignUp: () -> Unit,
+    onGlassScreenClick: () -> Unit
 ) {
     val cameraPermissionState = rememberPermissionState(
         Manifest.permission.CAMERA
@@ -486,6 +492,28 @@ fun HomeScreen(
                 )
             ) {
                 Text("Interactive 회원가입 플로우 테스트")
+            }
+
+            // Glass Screen 효과
+            Button(
+                onClick = onGlassScreenClick,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+                    .microInteraction(
+                        MicroInteraction.Custom(
+                            customName = "glass_screen",
+                            feedback = FeedbackType.combined(
+                                FeedbackType.haptic(HapticType.MEDIUM),
+                                FeedbackType.animation(AnimationType.PULSE)
+                            )
+                        )
+                    ),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
+            ) {
+                Text("Glass Screen 효과 테스트")
             }
 
             if (!cameraPermissionState.status.isGranted) {

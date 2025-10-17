@@ -25,6 +25,7 @@ navigationCompose = "2.9.5"
 onnxruntimeAndroid = "1.23.1"
 retrofit = "3.0.0"
 runtimeLivedata = "1.9.3"
+uiGeometry = "1.9.3"
 
 [libraries]
 accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanistPermissions" }
@@ -62,6 +63,7 @@ lottie-compose = { module = "com.airbnb.android:lottie-compose", version.ref = "
 microinteractions = { module = "com.github.gay00ung:MicroInteractions", version.ref = "microinteractions" }
 onnxruntime-android = { module = "com.microsoft.onnxruntime:onnxruntime-android", version.ref = "onnxruntimeAndroid" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
+androidx-compose-ui-geometry = { group = "androidx.compose.ui", name = "ui-geometry", version.ref = "uiGeometry" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
