@@ -39,6 +39,7 @@ import net.ifmain.androiddummy.interactive_ui.GenericShapeTest
 import net.ifmain.androiddummy.gemini_nano.GeminiNanoScreen
 import android.util.Log
 import net.ifmain.androiddummy.interactive_ui.GenericShapeTest2
+import net.ifmain.androiddummy.sign_up.InteractiveSignUp
 import net.ifmain.androiddummy.sign_up.SignUpGraph
 
 class MainActivity : FragmentActivity() {
@@ -91,6 +92,8 @@ fun MainApp() {
                 onInteractiveUi2Click = { navController.navigate("interactive_ui_2") },
                 onGeminiNanoClick = { navController.navigate("gemini_nano") },
                 onSignUpClick = { navController.navigate("sign_up") },
+                onInteractiveSignUp = { navController.navigate("interactive_sign_up") }
+
             )
         }
         composable("fingerprint") {
@@ -161,6 +164,9 @@ fun MainApp() {
                 }
             )
         }
+        composable("interactive_sign_up") {
+            InteractiveSignUp()
+        }
     }
 }
 
@@ -179,7 +185,8 @@ fun HomeScreen(
     onInteractiveUiClick: () -> Unit,
     onInteractiveUi2Click: () -> Unit,
     onGeminiNanoClick: () -> Unit,
-    onSignUpClick: () -> Unit
+    onSignUpClick: () -> Unit,
+    onInteractiveSignUp: () -> Unit
 ) {
     val cameraPermissionState = rememberPermissionState(
         Manifest.permission.CAMERA
@@ -454,6 +461,31 @@ fun HomeScreen(
                 )
             ) {
                 Text("회원가입 플로우 테스트")
+            }
+
+            // Interactive 회원가입 플로우 테스트 버튼
+            Button(
+                onClick = {
+                    Log.d("MainActivity", "Interactive Sign Up 버튼 클릭!")
+                    onInteractiveSignUp()
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+                    .microInteraction(
+                        MicroInteraction.Custom(
+                            customName = "interactive_sign_up",
+                            feedback = FeedbackType.combined(
+                                FeedbackType.haptic(HapticType.MEDIUM),
+                                FeedbackType.animation(AnimationType.PULSE)
+                            )
+                        )
+                    ),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
+            ) {
+                Text("Interactive 회원가입 플로우 테스트")
             }
 
             if (!cameraPermissionState.status.isGranted) {
