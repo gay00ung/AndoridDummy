@@ -38,6 +38,7 @@ import net.ifmain.androiddummy.face_rotation.ui.FaceVerificationScreen
 import net.ifmain.androiddummy.interactive_ui.GenericShapeTest
 import net.ifmain.androiddummy.gemini_nano.GeminiNanoScreen
 import android.util.Log
+import net.ifmain.androiddummy.animation.InfiniteAnimation
 import net.ifmain.androiddummy.glass_screen.ShadowsScreen
 import net.ifmain.androiddummy.interactive_ui.GenericShapeTest2
 import net.ifmain.androiddummy.sign_up.InteractiveSignUp
@@ -94,8 +95,8 @@ fun MainApp() {
                 onGeminiNanoClick = { navController.navigate("gemini_nano") },
                 onSignUpClick = { navController.navigate("sign_up") },
                 onInteractiveSignUp = { navController.navigate("interactive_sign_up") },
-                onGlassScreenClick = { navController.navigate("glass_screen") }
-
+                onGlassScreenClick = { navController.navigate("glass_screen") },
+                onInfiniteAnimationClick = { navController.navigate("infinite_animation") },
             )
         }
         composable("fingerprint") {
@@ -172,6 +173,9 @@ fun MainApp() {
         composable("interactive_sign_up") {
             InteractiveSignUp()
         }
+        composable("infinite_animation") {
+            InfiniteAnimation()
+        }
     }
 }
 
@@ -192,7 +196,8 @@ fun HomeScreen(
     onGeminiNanoClick: () -> Unit,
     onSignUpClick: () -> Unit,
     onInteractiveSignUp: () -> Unit,
-    onGlassScreenClick: () -> Unit
+    onGlassScreenClick: () -> Unit,
+    onInfiniteAnimationClick: () -> Unit,
 ) {
     val cameraPermissionState = rememberPermissionState(
         Manifest.permission.CAMERA
@@ -514,6 +519,28 @@ fun HomeScreen(
                 )
             ) {
                 Text("Glass Screen 효과 테스트")
+            }
+
+            // Infinite Animation 테스트 버튼
+            Button(
+                onClick = onInfiniteAnimationClick,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+                    .microInteraction(
+                        MicroInteraction.Custom(
+                            customName = "infinite_animation",
+                            feedback = FeedbackType.combined(
+                                FeedbackType.haptic(HapticType.MEDIUM),
+                                FeedbackType.animation(AnimationType.PULSE)
+                            )
+                        )
+                    ),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
+            ) {
+                Text("Infinite Animation 테스트")
             }
 
             if (!cameraPermissionState.status.isGranted) {
