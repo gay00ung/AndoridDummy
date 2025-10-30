@@ -39,6 +39,7 @@ import net.ifmain.androiddummy.interactive_ui.GenericShapeTest
 import net.ifmain.androiddummy.gemini_nano.GeminiNanoScreen
 import android.util.Log
 import net.ifmain.androiddummy.animation.InfiniteAnimation
+import net.ifmain.androiddummy.animation.LandingPage
 import net.ifmain.androiddummy.glass_screen.ShadowsScreen
 import net.ifmain.androiddummy.interactive_ui.GenericShapeTest2
 import net.ifmain.androiddummy.sign_up.InteractiveSignUp
@@ -97,6 +98,7 @@ fun MainApp() {
                 onInteractiveSignUp = { navController.navigate("interactive_sign_up") },
                 onGlassScreenClick = { navController.navigate("glass_screen") },
                 onInfiniteAnimationClick = { navController.navigate("infinite_animation") },
+                onLandingPageClick = { navController.navigate("landing_page") }
             )
         }
         composable("fingerprint") {
@@ -176,6 +178,9 @@ fun MainApp() {
         composable("infinite_animation") {
             InfiniteAnimation()
         }
+        composable("landing_page") {
+            LandingPage()
+        }
     }
 }
 
@@ -198,6 +203,7 @@ fun HomeScreen(
     onInteractiveSignUp: () -> Unit,
     onGlassScreenClick: () -> Unit,
     onInfiniteAnimationClick: () -> Unit,
+    onLandingPageClick: () -> Unit,
 ) {
     val cameraPermissionState = rememberPermissionState(
         Manifest.permission.CAMERA
@@ -541,6 +547,28 @@ fun HomeScreen(
                 )
             ) {
                 Text("Infinite Animation 테스트")
+            }
+
+            // Landing Page 테스트 버튼
+            Button(
+                onClick = onLandingPageClick,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+                    .microInteraction(
+                        MicroInteraction.Custom(
+                            customName = "landing_page",
+                            feedback = FeedbackType.combined(
+                                FeedbackType.haptic(HapticType.MEDIUM),
+                                FeedbackType.animation(AnimationType.PULSE)
+                            )
+                        )
+                    ),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
+            ) {
+                Text("Landing Page 테스트")
             }
 
             if (!cameraPermissionState.status.isGranted) {
