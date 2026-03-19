@@ -1,6 +1,6 @@
 [versions]
 accompanistPermissions = "0.37.3"
-agp = "9.0.1"
+agp = "9.1.0"
 aicore = "0.0.1-exp02"
 biometricKtx = "1.4.0-alpha02"
 cameraCore = "1.5.3"
