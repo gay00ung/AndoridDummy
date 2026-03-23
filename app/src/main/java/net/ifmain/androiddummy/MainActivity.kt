@@ -38,6 +38,7 @@ import net.ifmain.androiddummy.face_rotation.ui.FaceVerificationScreen
 import net.ifmain.androiddummy.interactive_ui.GenericShapeTest
 import net.ifmain.androiddummy.gemini_nano.GeminiNanoScreen
 import android.util.Log
+import net.ifmain.androiddummy.age.InferenceAgeScreen
 import net.ifmain.androiddummy.animation.InfiniteAnimation
 import net.ifmain.androiddummy.animation.LandingPage
 import net.ifmain.androiddummy.glass_screen.ShadowsScreen
@@ -98,7 +99,8 @@ fun MainApp() {
                 onInteractiveSignUp = { navController.navigate("interactive_sign_up") },
                 onGlassScreenClick = { navController.navigate("glass_screen") },
                 onInfiniteAnimationClick = { navController.navigate("infinite_animation") },
-                onLandingPageClick = { navController.navigate("landing_page") }
+                onLandingPageClick = { navController.navigate("landing_page") },
+                onInferenceAgeClick = { navController.navigate("inference_age") }
             )
         }
         composable("fingerprint") {
@@ -181,6 +183,12 @@ fun MainApp() {
         composable("landing_page") {
             LandingPage()
         }
+        composable("inference_age") {
+            InferenceAgeScreen(
+                onBack = { navController.popBackStack() },
+                onNavigateToResult = { navController.popBackStack() }
+            )
+        }
     }
 }
 
@@ -204,6 +212,7 @@ fun HomeScreen(
     onGlassScreenClick: () -> Unit,
     onInfiniteAnimationClick: () -> Unit,
     onLandingPageClick: () -> Unit,
+    onInferenceAgeClick: () -> Unit,
 ) {
     val cameraPermissionState = rememberPermissionState(
         Manifest.permission.CAMERA
@@ -569,6 +578,28 @@ fun HomeScreen(
                 )
             ) {
                 Text("Landing Page 테스트")
+            }
+
+            // Inference Age 테스트 버튼
+            Button(
+                onClick = onInferenceAgeClick,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+                    .microInteraction(
+                        MicroInteraction.Custom(
+                            customName = "inference_age",
+                            feedback = FeedbackType.combined(
+                                FeedbackType.haptic(HapticType.MEDIUM),
+                                FeedbackType.animation(AnimationType.PULSE)
+                            )
+                        )
+                    ),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
+            ) {
+                Text("Inference Age 테스트")
             }
 
             if (!cameraPermissionState.status.isGranted) {

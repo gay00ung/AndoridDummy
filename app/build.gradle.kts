@@ -30,8 +30,8 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlin {
         compilerOptions {
@@ -43,6 +43,9 @@ android {
     }
     lint {
         baseline = file("lint-baseline.xml")
+    }
+    androidResources{
+        noCompress += "tflite"
     }
 }
 
@@ -111,5 +114,9 @@ dependencies {
 
     // ViewModel
     implementation(libs.androidx.lifecycle.viewmodel.compose)
+
+    // Tflite
+    implementation(libs.tensorflow.lite)
+    implementation(libs.tensorflow.lite.support)
 
 }
