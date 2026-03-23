@@ -1,57 +1,47 @@
 package net.ifmain.androiddummy
 
-import android.Manifest
-import android.os.Bundle
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
+import android.*
+import android.os.*
+import android.util.*
+import androidx.activity.*
+import androidx.activity.compose.*
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.*
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import com.gayoung.microinteractions.MicroInteractions
+import androidx.compose.ui.*
+import androidx.compose.ui.unit.*
+import androidx.core.view.*
+import androidx.fragment.app.*
+import androidx.lifecycle.viewmodel.compose.*
+import androidx.navigation.compose.*
+import com.gayoung.microinteractions.*
 import com.gayoung.microinteractions.core.*
 import com.gayoung.microinteractions.extensions.*
-import androidx.core.view.WindowCompat
-import androidx.fragment.app.FragmentActivity
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.isGranted
-import com.google.accompanist.permissions.rememberPermissionState
-import net.ifmain.androiddummy.biometric.FingerprintAuthScreen
-import net.ifmain.androiddummy.biometric.FingerprintAuthTheme
-import net.ifmain.androiddummy.chatbot.ui.NutritionChatScreen
-import net.ifmain.androiddummy.mlkit.FaceDetectionScreen
-import net.ifmain.androiddummy.onnx.ui.AnimeFilterScreen
-import net.ifmain.androiddummy.sensor_ui.ui.TaroCardScreen
-import net.ifmain.androiddummy.sensor_ui.ui.TiltCardScreen
-import net.ifmain.androiddummy.microinteractions.MicroInteractionsShowcaseScreen
-import net.ifmain.androiddummy.touch_pattern.TouchMonitoringScreen
-import net.ifmain.androiddummy.face_rotation.ui.FaceVerificationScreen
-import net.ifmain.androiddummy.interactive_ui.GenericShapeTest
-import net.ifmain.androiddummy.gemini_nano.GeminiNanoScreen
-import android.util.Log
-import net.ifmain.androiddummy.age.InferenceAgeScreen
-import net.ifmain.androiddummy.animation.InfiniteAnimation
-import net.ifmain.androiddummy.animation.LandingPage
-import net.ifmain.androiddummy.glass_screen.ShadowsScreen
-import net.ifmain.androiddummy.interactive_ui.GenericShapeTest2
-import net.ifmain.androiddummy.sign_up.InteractiveSignUp
-import net.ifmain.androiddummy.sign_up.SignUpGraph
+import com.google.accompanist.permissions.*
+import net.ifmain.androiddummy.age.*
+import net.ifmain.androiddummy.animation.*
+import net.ifmain.androiddummy.biometric.*
+import net.ifmain.androiddummy.chatbot.ui.*
+import net.ifmain.androiddummy.face_rotation.ui.*
+import net.ifmain.androiddummy.gemini_nano.*
+import net.ifmain.androiddummy.glass_screen.*
+import net.ifmain.androiddummy.interactive_ui.*
+import net.ifmain.androiddummy.microinteractions.*
+import net.ifmain.androiddummy.mlkit.*
+import net.ifmain.androiddummy.onnx.ui.*
+import net.ifmain.androiddummy.sensor_ui.ui.*
+import net.ifmain.androiddummy.sign_up.*
+import net.ifmain.androiddummy.touch_pattern.*
 
 class MainActivity : FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         WindowCompat.setDecorFitsSystemWindows(window, false)
-        
+
         // MicroInteractions 초기화
         MicroInteractions.init(this)
         MicroInteractions.configure {
@@ -76,6 +66,7 @@ class MainActivity : FragmentActivity() {
 @Composable
 fun MainApp() {
     val navController = rememberNavController()
+    val ageVm: InferenceAgeViewModel = viewModel()
 
     NavHost(
         navController = navController,
@@ -149,7 +140,7 @@ fun MainApp() {
         composable("interactive_ui") {
             GenericShapeTest()
         }
-        composable ("interactive_ui_2") {
+        composable("interactive_ui_2") {
             GenericShapeTest2(
                 onBack = { navController.popBackStack() }
             )
@@ -185,8 +176,15 @@ fun MainApp() {
         }
         composable("inference_age") {
             InferenceAgeScreen(
+                viewModel = ageVm,
                 onBack = { navController.popBackStack() },
-                onNavigateToResult = { navController.popBackStack() }
+                onNavigateToResult = { navController.navigate("inference_age_result") }
+            )
+        }
+        composable("inference_age_result") {
+            InferenceAgeResultScreen(
+                viewModel = ageVm,
+                onBack = { navController.popBackStack() },
             )
         }
     }
@@ -322,9 +320,9 @@ fun HomeScreen(
             ) {
                 Text("타로 카드")
             }
-            
+
             Spacer(modifier = Modifier.height(16.dp))
-            
+
             // MicroInteractions 쇼케이스 버튼
             OutlinedButton(
                 onClick = onMicroInteractionsClick,
@@ -352,7 +350,7 @@ fun HomeScreen(
                 Spacer(modifier = Modifier.width(8.dp))
                 Text("MicroInteractions 쇼케이스")
             }
-            
+
             // 터치 모니터링 버튼
             Button(
                 onClick = onTouchMonitoringClick,
@@ -366,7 +364,7 @@ fun HomeScreen(
             ) {
                 Text("터치 데이터 실시간 모니터링")
             }
-            
+
             // 얼굴 회전 인증 버튼
             Button(
                 onClick = {

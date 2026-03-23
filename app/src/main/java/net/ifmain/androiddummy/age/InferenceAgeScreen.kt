@@ -19,11 +19,14 @@ import net.ifmain.androiddummy.component.*
 
 @Composable
 fun InferenceAgeScreen(
+    viewModel: InferenceAgeViewModel,
     onBack: () -> Unit,
     onNavigateToResult: () -> Unit,
 ) {
     val context = LocalContext.current
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+
+    val uiState by viewModel.uiState.collectAsState()
 
     val photoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia()
@@ -35,10 +38,19 @@ fun InferenceAgeScreen(
                 BitmapFactory.decodeStream(it)
             }
 
-            onNavigateToResult()
+            if (bitmap != null) {
+                viewModel.infer(bitmap)
+            }
         }
 
     }
+
+    LaunchedEffect(uiState.result) {
+        if (uiState.result != null) {
+            onNavigateToResult()
+        }
+    }
+
     Scaffold(
         topBar = {
             CommonTopBar(
@@ -47,54 +59,69 @@ fun InferenceAgeScreen(
             )
         }
     ) { innerPadding ->
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            Text(
-                text = "나이와 성별을 추론해보세요!",
-                modifier = Modifier.padding(16.dp),
-                style = MaterialTheme.typography.titleLarge
-            )
-
-            Text(
-                text = "gender_q.tflite, age_q.tflite 모델을 활용한 추론을 진행합니다.",
-                modifier = Modifier.padding(16.dp),
-                style = MaterialTheme.typography.bodyMedium
-            )
-
-            Box(
+            Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(16.dp)
-                    .background(color = Color.White)
-                    .clickable {
-                        photoPickerLauncher.launch(
-                            PickVisualMediaRequest(
-                                ActivityResultContracts.PickVisualMedia.ImageOnly
-                            )
-                        )
-                    },
-                contentAlignment = Alignment.Center,
             ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
-                    modifier = Modifier.fillMaxSize()
+                Text(
+                    text = "나이와 성별을 추론해보세요!",
+                    modifier = Modifier.padding(16.dp),
+                    style = MaterialTheme.typography.titleLarge
+                )
+
+                Text(
+                    text = "gender_q.tflite, age_q.tflite 모델을 활용한 추론을 진행합니다.",
+                    modifier = Modifier.padding(16.dp),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp)
+                        .background(color = Color.White)
+                        .clickable {
+                            photoPickerLauncher.launch(
+                                PickVisualMediaRequest(
+                                    ActivityResultContracts.PickVisualMedia.ImageOnly
+                                )
+                            )
+                        },
+                    contentAlignment = Alignment.Center,
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.AddPhotoAlternate,
-                        contentDescription = "Add Photo",
-                        modifier = Modifier
-                            .padding(bottom = 8.dp)
-                    )
-                    Text(
-                        text = "사진을 선택하세요."
-                    )
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center,
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.AddPhotoAlternate,
+                            contentDescription = "Add Photo",
+                            modifier = Modifier
+                                .padding(bottom = 8.dp)
+                        )
+                        Text(
+                            text = "사진을 선택하세요."
+                        )
+                    }
+                }
+
+            }
+            if (uiState.isLoading) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.3f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
                 }
             }
-
         }
     }
 }

@@ -58,6 +58,7 @@ class InferenceAgeViewModel(
         viewModelScope.launch {
             _uiState.update {
                 it.copy(
+                    result = null,
                     isLoading = true,
                     errorMessage = null,
                 )
