@@ -1,7 +1,6 @@
 package net.ifmain.androiddummy.age
 
 import android.graphics.*
-import android.net.*
 import androidx.activity.compose.*
 import androidx.activity.result.*
 import androidx.activity.result.contract.*
@@ -15,8 +14,10 @@ import androidx.compose.ui.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.*
 import androidx.compose.ui.unit.*
+import com.google.accompanist.permissions.*
 import net.ifmain.androiddummy.component.*
 
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun InferenceAgeScreen(
     viewModel: InferenceAgeViewModel,
@@ -24,15 +25,21 @@ fun InferenceAgeScreen(
     onNavigateToResult: () -> Unit,
 ) {
     val context = LocalContext.current
-    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
 
     val uiState by viewModel.uiState.collectAsState()
+
+    var showSourceDialog by remember { mutableStateOf(false) }
+    var useCameraMode by remember { mutableStateOf(false) }
+    var pendingCameraMode by remember { mutableStateOf(false) }
+    var currentFrame by remember { mutableStateOf<Bitmap?>(null) }
+
+    val cameraPermissionState = rememberPermissionState(
+        android.Manifest.permission.CAMERA
+    )
 
     val photoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia()
     ) { uri ->
-        selectedImageUri = uri
-
         if (uri != null) {
             val bitmap = context.contentResolver.openInputStream(uri)?.use {
                 BitmapFactory.decodeStream(it)
@@ -47,7 +54,16 @@ fun InferenceAgeScreen(
 
     LaunchedEffect(uiState.result) {
         if (uiState.result != null) {
+            useCameraMode = false
+            currentFrame = null
             onNavigateToResult()
+        }
+    }
+
+    LaunchedEffect(cameraPermissionState.status.isGranted, pendingCameraMode) {
+        if (pendingCameraMode && cameraPermissionState.status.isGranted) {
+            useCameraMode = true
+            pendingCameraMode = false
         }
     }
 
@@ -80,38 +96,110 @@ fun InferenceAgeScreen(
                     style = MaterialTheme.typography.bodyMedium
                 )
 
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp)
-                        .background(color = Color.White)
-                        .clickable {
-                            photoPickerLauncher.launch(
-                                PickVisualMediaRequest(
-                                    ActivityResultContracts.PickVisualMedia.ImageOnly
-                                )
-                            )
-                        },
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center,
-                        modifier = Modifier.fillMaxSize()
+                if (useCameraMode) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp)
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.AddPhotoAlternate,
-                            contentDescription = "Add Photo",
+                        InferenceAgeCameraPreview(
+                            modifier = Modifier.fillMaxSize(),
+                            onFrameAvailable = { bitmap ->
+                                currentFrame = bitmap
+                            }
+                        )
+
+                        Row(
                             modifier = Modifier
-                                .padding(bottom = 8.dp)
-                        )
-                        Text(
-                            text = "사진을 선택하세요."
-                        )
+                                .align(Alignment.BottomCenter)
+                                .padding(16.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            OutlinedButton(
+                                onClick = {
+                                    useCameraMode = false
+                                    currentFrame = null
+                                }
+                            ) {
+                                Text("닫기")
+                            }
+
+                            Button(
+                                onClick = {
+                                    currentFrame?.let { frame ->
+                                        viewModel.infer(frame)
+                                    }
+                                },
+                                enabled = currentFrame != null && !uiState.isLoading,
+                            ) {
+                                Text("촬영해서 분석")
+                            }
+                        }
+                    }
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp)
+                            .background(color = Color.White)
+                            .clickable {
+                                showSourceDialog = true
+                            },
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center,
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.AddPhotoAlternate,
+                                contentDescription = "Add Photo",
+                                modifier = Modifier.padding(bottom = 8.dp)
+                            )
+                            Text(text = "사진을 선택하세요.")
+                        }
                     }
                 }
 
             }
+            if (showSourceDialog) {
+                AlertDialog(
+                    onDismissRequest = { showSourceDialog = false },
+                    title = { Text("사진 가져오기") },
+                    text = { Text("가져올 방식을 선택하세요.") },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                showSourceDialog = false
+                                if (cameraPermissionState.status.isGranted) {
+                                    useCameraMode = true
+                                } else {
+                                    pendingCameraMode = true
+                                    cameraPermissionState.launchPermissionRequest()
+                                }
+                            }
+                        ) {
+                            Text("카메라로 촬영")
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(
+                            onClick = {
+                                showSourceDialog = false
+                                photoPickerLauncher.launch(
+                                    PickVisualMediaRequest(
+                                        ActivityResultContracts.PickVisualMedia.ImageOnly
+                                    )
+                                )
+                            }
+                        ) {
+                            Text("갤러리에서 선택")
+                        }
+                    }
+                )
+            }
+
             if (uiState.isLoading) {
                 Box(
                     modifier = Modifier
