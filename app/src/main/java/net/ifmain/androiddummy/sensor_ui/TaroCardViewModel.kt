@@ -9,9 +9,11 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
 import kotlin.math.*
 
-class TaroCardViewModel : ViewModel() {
-    private var tiltSensorManager: TiltSensorManager? = null
-    private var hapticUtils: HapticUtils? = null
+class TaroCardViewModel(
+    private val nowMillis: () -> Long = System::currentTimeMillis
+) : ViewModel() {
+    private var tiltSensorManager: TiltSensorDataSource? = null
+    private var hapticUtils: HapticFeedbackController? = null
 
     private val cardEmojis = listOf("🌟", "🌙", "☀️", "⭐", "🔥", "💎", "🌈", "🦋", "🌸", "⚡")
 
@@ -34,7 +36,10 @@ class TaroCardViewModel : ViewModel() {
     private var lastFlipTime = 0L
     private val flipCooldown = 800L // 카드 넘김 간격 (ms)
 
-    fun initSensor(tiltSensorManager: TiltSensorManager, hapticUtils: HapticUtils) {
+    fun initSensor(
+        tiltSensorManager: TiltSensorDataSource,
+        hapticUtils: HapticFeedbackController
+    ) {
         this.tiltSensorManager = tiltSensorManager
         this.hapticUtils = hapticUtils
 
@@ -44,7 +49,7 @@ class TaroCardViewModel : ViewModel() {
                 _tiltDirection.value = tiltY / 10f
 
                 // 기울기가 충분히 클 때만 카드 넘김
-                val currentTime = System.currentTimeMillis()
+                val currentTime = nowMillis()
                 if (abs(tiltY) > 3f && currentTime - lastFlipTime > flipCooldown) {
                     if (tiltY > 3f) {
                         flipToNext()

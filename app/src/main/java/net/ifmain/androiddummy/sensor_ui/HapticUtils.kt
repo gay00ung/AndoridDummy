@@ -6,7 +6,7 @@ import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
 
-class HapticUtils(private val context: Context) {
+class HapticUtils(private val context: Context) : HapticFeedbackController {
     private val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
         val vibratorManager = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
         vibratorManager.defaultVibrator
@@ -15,15 +15,15 @@ class HapticUtils(private val context: Context) {
         context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
     }
 
-    fun lightTap() {
+    override fun lightTap() {
         vibrator.vibrate(VibrationEffect.createOneShot(50, VibrationEffect.DEFAULT_AMPLITUDE))
     }
 
-    fun mediumTap() {
+    override fun mediumTap() {
         vibrator.vibrate(VibrationEffect.createOneShot(100, 128))
     }
 
-    fun strongTap() {
+    override fun strongTap() {
         vibrator.vibrate(VibrationEffect.createOneShot(150, VibrationEffect.DEFAULT_AMPLITUDE))
     }
 }

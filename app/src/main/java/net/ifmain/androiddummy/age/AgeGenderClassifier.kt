@@ -33,7 +33,7 @@ import kotlin.math.*
  */
 class AgeGenderClassifier(
     context: Context
-) : Closeable {
+) : AgeGenderEngine {
 
     private val appContext = context.applicationContext
 
@@ -125,7 +125,7 @@ class AgeGenderClassifier(
      * @return 잘라낸 얼굴 이미지와 예측 결과를 포함한 [AgeGenderResult]
      * @throws IllegalStateException 얼굴을 찾을 수 없는 경우
      */
-    suspend fun classify(bitmap: Bitmap): AgeGenderResult {
+    override suspend fun classify(bitmap: Bitmap): AgeGenderResult {
         val faceRect = detectLargestFace(bitmap)
             ?: throw IllegalStateException("얼굴을 찾을 수 없습니다.")
 

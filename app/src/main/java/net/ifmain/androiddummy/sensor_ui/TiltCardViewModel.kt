@@ -8,9 +8,11 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlin.math.*
 
-class TiltCardViewModel : ViewModel() {
-    private var tiltSensorManager: TiltSensorManager? = null
-    private var hapticUtils: HapticUtils? = null
+class TiltCardViewModel(
+    private val nowMillis: () -> Long = System::currentTimeMillis
+) : ViewModel() {
+    private var tiltSensorManager: TiltSensorDataSource? = null
+    private var hapticUtils: HapticFeedbackController? = null
 
     private val _cards = MutableStateFlow(
         List(5) { index ->
@@ -31,7 +33,10 @@ class TiltCardViewModel : ViewModel() {
     private var lastHapticTime = 0L
     private var lastIntensityLevel = 0
 
-    fun initSensor(tiltSensorManager: TiltSensorManager, hapticUtils: HapticUtils) {
+    fun initSensor(
+        tiltSensorManager: TiltSensorDataSource,
+        hapticUtils: HapticFeedbackController
+    ) {
         this.tiltSensorManager = tiltSensorManager
         this.hapticUtils = hapticUtils
 
@@ -59,7 +64,7 @@ class TiltCardViewModel : ViewModel() {
     }
 
     private fun handleHapticFeedback(intensity: Float) {
-        val currentTime = System.currentTimeMillis()
+        val currentTime = nowMillis()
         val intensityLevel = when {
             intensity > 8f -> 3 // 강한 기울기
             intensity > 4f -> 2 // 중간 기울기
@@ -78,9 +83,13 @@ class TiltCardViewModel : ViewModel() {
             }
 
             lastHapticTime = currentTime
+            lastIntensityLevel = intensityLevel
+            return
         }
 
-        lastIntensityLevel = intensityLevel
+        if (intensityLevel < lastIntensityLevel) {
+            lastIntensityLevel = intensityLevel
+        }
     }
 
     fun startSensor() {

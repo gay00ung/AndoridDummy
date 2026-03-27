@@ -10,12 +10,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlin.math.abs
 
-class TiltSensorManager(context: Context) : SensorEventListener {
+class TiltSensorManager(context: Context) : SensorEventListener, TiltSensorDataSource {
     private val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
     private val accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
 
     private val _sensorData = MutableStateFlow(SensorData())
-    val sensorData: StateFlow<SensorData> = _sensorData.asStateFlow()
+    override val sensorData: StateFlow<SensorData> = _sensorData.asStateFlow()
 
     // 성능 최적화를 위한 필터링
     private var lastUpdateTime = 0L
@@ -25,13 +25,13 @@ class TiltSensorManager(context: Context) : SensorEventListener {
     private var lastZ = 0f
     private val threshold = 0.1f // 최소 변화량
 
-    fun startListening() {
+    override fun startListening() {
         accelerometer?.let {
             sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_GAME)
         }
     }
 
-    fun stopListening() {
+    override fun stopListening() {
         sensorManager.unregisterListener(this)
     }
 

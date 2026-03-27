@@ -14,15 +14,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.gayoung.microinteractions.MicroInteractions
 import com.gayoung.microinteractions.core.*
 import com.gayoung.microinteractions.extensions.*
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
-import kotlinx.coroutines.launch
-import net.ifmain.androiddummy.chatbot.ChatRequest
-import net.ifmain.androiddummy.chatbot.ChatbotService
+import androidx.lifecycle.viewmodel.compose.viewModel
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -34,32 +31,65 @@ import java.util.*
  * Description:
  */
 
-data class ChatMessage(
-    val text: String,
-    val isUser: Boolean,
-    val timestamp: Long = System.currentTimeMillis()
-)
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NutritionChatScreen(
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    viewModel: NutritionChatViewModel = viewModel(),
 ) {
-    var messages by remember { mutableStateOf(listOf<ChatMessage>()) }
-    var inputText by remember { mutableStateOf("") }
-    var isLoading by remember { mutableStateOf(false) }
-    val coroutineScope = rememberCoroutineScope()
+    val uiState by viewModel.uiState.collectAsState()
     val listState = rememberLazyListState()
     val context = LocalContext.current
 
-    // 초기 메시지
-    LaunchedEffect(Unit) {
-        messages = listOf(
-            ChatMessage(
-                "안녕하세요! AI 영양 코치입니다 🌟\n배고프거나 식단 관련 고민이 있으시면 편하게 말씀해주세요!",
-                false
-            )
-        )
+    LaunchedEffect(viewModel, context) {
+        viewModel.events.collect { event ->
+            val activity = context as? android.app.Activity ?: return@collect
+
+            when (event) {
+                NutritionChatEvent.MessageSent -> {
+                    activity.window.decorView.triggerMicroInteraction(
+                        MicroInteraction.Custom(
+                            customName = "message_send",
+                            feedback = FeedbackType.combined(
+                                FeedbackType.haptic(HapticType.LIGHT),
+                                FeedbackType.animation(AnimationType.PULSE)
+                            )
+                        )
+                    )
+                }
+
+                NutritionChatEvent.MessageReceived -> {
+                    activity.window.decorView.triggerMicroInteraction(
+                        MicroInteraction.Custom(
+                            customName = "message_received",
+                            feedback = FeedbackType.combined(
+                                FeedbackType.haptic(HapticType.SELECTION),
+                                FeedbackType.animation(AnimationType.BOUNCE)
+                            )
+                        )
+                    )
+                }
+
+                NutritionChatEvent.ResponseFailed -> {
+                    activity.window.decorView.triggerMicroInteraction(MicroInteraction.Failure)
+                }
+
+                NutritionChatEvent.NetworkError -> {
+                    activity.window.decorView.triggerMicroInteraction(
+                        MicroInteraction.Custom(
+                            customName = "network_error",
+                            feedback = FeedbackType.haptic(HapticType.ERROR)
+                        )
+                    )
+                }
+            }
+        }
+    }
+
+    LaunchedEffect(uiState.messages.size) {
+        if (uiState.messages.isNotEmpty()) {
+            listState.animateScrollToItem(uiState.messages.lastIndex)
+        }
     }
 
     Scaffold(
@@ -89,12 +119,12 @@ fun NutritionChatScreen(
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(messages) { message ->
+                items(uiState.messages) { message ->
                     ChatBubble(message)
                 }
 
                 // 로딩 표시
-                if (isLoading) {
+                if (uiState.isLoading) {
                     item {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -133,8 +163,8 @@ fun NutritionChatScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     OutlinedTextField(
-                        value = inputText,
-                        onValueChange = { inputText = it },
+                        value = uiState.inputText,
+                        onValueChange = viewModel::onInputChange,
                         modifier = Modifier.weight(1f),
                         placeholder = { Text("메시지를 입력하세요...") },
                         maxLines = 3,
@@ -142,89 +172,14 @@ fun NutritionChatScreen(
                     )
 
                     IconButton(
-                        onClick = {
-                            if (inputText.isNotBlank() && !isLoading) {
-                                val userMessage = inputText.trim()
-                                inputText = ""
-
-                                // 사용자 메시지 추가
-                                messages = messages + ChatMessage(userMessage, true)
-                                
-                                // 메시지 전송 피드백
-                                (context as? android.app.Activity)?.window?.decorView?.triggerMicroInteraction(
-                                    MicroInteraction.Custom(
-                                        customName = "message_send",
-                                        feedback = FeedbackType.combined(
-                                            FeedbackType.haptic(HapticType.LIGHT),
-                                            FeedbackType.animation(AnimationType.PULSE)
-                                        )
-                                    )
-                                )
-
-                                // AI 응답 받기
-                                isLoading = true
-                                coroutineScope.launch {
-                                    try {
-                                        val response = ChatbotService.api.sendMessage(
-                                            ChatRequest(
-                                                message = userMessage,
-                                                user_data = mapOf(
-                                                    "calories" to 1650,
-                                                    "remaining_calories" to 350,
-                                                    "protein" to 85
-                                                )
-                                            )
-                                        )
-
-                                        messages = if (response.success && response.response != null) {
-                                            // 성공적인 응답 수신 피드백
-                                            (context as? android.app.Activity)?.window?.decorView?.triggerMicroInteraction(
-                                                MicroInteraction.Custom(
-                                                    customName = "message_received",
-                                                    feedback = FeedbackType.combined(
-                                                        FeedbackType.haptic(HapticType.SELECTION),
-                                                        FeedbackType.animation(AnimationType.BOUNCE)
-                                                    )
-                                                )
-                                            )
-                                            messages + ChatMessage(response.response, false)
-                                        } else {
-                                            // 에러 피드백
-                                            (context as? android.app.Activity)?.window?.decorView?.triggerMicroInteraction(
-                                                MicroInteraction.Failure
-                                            )
-                                            messages + ChatMessage(
-                                                "죄송해요, 일시적인 오류가 발생했어요. 다시 시도해주세요.",
-                                                false
-                                            )
-                                        }
-                                    } catch (_: Exception) {
-                                        // 네트워크 에러 피드백
-                                        (context as? android.app.Activity)?.window?.decorView?.triggerMicroInteraction(
-                                            MicroInteraction.Custom(
-                                                customName = "network_error",
-                                                feedback = FeedbackType.haptic(HapticType.ERROR)
-                                            )
-                                        )
-                                        messages = messages + ChatMessage(
-                                            "서버 연결에 실패했어요. 서버가 실행 중인지 확인해주세요.",
-                                            false
-                                        )
-                                    } finally {
-                                        isLoading = false
-                                        // 스크롤을 최신 메시지로
-                                        listState.animateScrollToItem(messages.size - 1)
-                                    }
-                                }
-                            }
-                        },
-                        enabled = inputText.isNotBlank() && !isLoading,
+                        onClick = viewModel::sendMessage,
+                        enabled = uiState.inputText.isNotBlank() && !uiState.isLoading,
                         modifier = Modifier.tapInteraction()
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.Send,
                             contentDescription = "전송",
-                            tint = if (inputText.isNotBlank() && !isLoading)
+                            tint = if (uiState.inputText.isNotBlank() && !uiState.isLoading)
                                 MaterialTheme.colorScheme.primary
                             else
                                 Color.Gray
@@ -248,7 +203,7 @@ fun ChatBubble(message: ChatMessage) {
 
     AnimatedVisibility(
         visible = isVisible,
-        enter = fadeIn() + androidx.compose.animation.slideInVertically(
+        enter = fadeIn() + slideInVertically(
             initialOffsetY = { if (message.isUser) 50 else -50 }
         )
     ) {

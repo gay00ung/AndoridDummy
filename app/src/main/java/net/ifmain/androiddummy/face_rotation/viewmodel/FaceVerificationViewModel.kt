@@ -14,21 +14,36 @@ import kotlin.random.Random
  * @author gayoung.
  * @since 2025. 7. 21.
  */
-class FaceVerificationViewModel : ViewModel() {
-
-    private val _uiState = MutableStateFlow(FaceVerificationUiState())
-    val uiState: StateFlow<FaceVerificationUiState> = _uiState.asStateFlow()
+class FaceVerificationViewModel(
+    private val stepProvider: () -> List<VerificationStep> = {
+        defaultVerificationSteps()
+    },
+    private val blinkTargetProvider: () -> Int = {
+        Random.nextInt(1, 6)
+    },
+    private val nowMillis: () -> Long = System::currentTimeMillis
+) : ViewModel() {
 
     private var currentStepIndex = 0
-    private var stepStartTime = 0L
+    private var stepStartTime: Long? = null
     private val requiredDuration = 1000L
 
     private var targetBlinkCount = 0
     private var currentBlinkCount = 0
     private var wasEyesClosed = false
-    private val verificationSteps = generateRandomSteps()
+    private val verificationSteps = stepProvider()
+    private val initialStep = verificationSteps.firstOrNull() ?: VerificationStep.LOOK_STRAIGHT
 
-    fun generateRandomSteps(): List<VerificationStep> {
+    private val _uiState = MutableStateFlow(
+        FaceVerificationUiState(
+            currentStep = initialStep,
+            instruction = initialStep.instruction
+        )
+    )
+    val uiState: StateFlow<FaceVerificationUiState> = _uiState.asStateFlow()
+
+    private companion object {
+        fun defaultVerificationSteps(): List<VerificationStep> {
         val directionSteps = listOf(
             VerificationStep.LOOK_STRAIGHT,
             VerificationStep.TURN_LEFT,
@@ -43,6 +58,7 @@ class FaceVerificationViewModel : ViewModel() {
         val randomDirection = directionSteps.random()
 
         return listOf(randomDirection, VerificationStep.BLINK)
+        }
     }
 
     data class FaceVerificationUiState(
@@ -151,11 +167,11 @@ class FaceVerificationViewModel : ViewModel() {
             processBlinkStep(faceData)
         } else {
             if (currentStep.validation(faceData)) {
-                if (stepStartTime == 0L) {
-                    stepStartTime = System.currentTimeMillis()
+                if (stepStartTime == null) {
+                    stepStartTime = nowMillis()
                 }
 
-                val elapsedTime = System.currentTimeMillis() - stepStartTime
+                val elapsedTime = nowMillis() - (stepStartTime ?: nowMillis())
                 val progress = (elapsedTime.toFloat() / requiredDuration).coerceIn(0f, 1f)
 
                 _uiState.update {
@@ -169,7 +185,7 @@ class FaceVerificationViewModel : ViewModel() {
                     moveToNextStep()
                 }
             } else {
-                stepStartTime = 0L
+                stepStartTime = null
                 _uiState.update {
                     it.copy(
                         progress = 0f,
@@ -182,7 +198,7 @@ class FaceVerificationViewModel : ViewModel() {
 
     private fun moveToNextStep() {
         currentStepIndex++
-        stepStartTime = 0L
+        stepStartTime = null
 
         currentBlinkCount = 0
         wasEyesClosed = false
@@ -191,7 +207,7 @@ class FaceVerificationViewModel : ViewModel() {
             val nextStep = verificationSteps[currentStepIndex]
 
             if (nextStep == VerificationStep.BLINK) {
-                targetBlinkCount = Random.nextInt(1, 6)
+                targetBlinkCount = blinkTargetProvider()
                 _uiState.update {
                     it.copy(
                         currentStep = nextStep,

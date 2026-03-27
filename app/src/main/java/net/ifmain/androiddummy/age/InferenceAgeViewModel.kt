@@ -34,11 +34,12 @@ data class InferenceAgeUiState(
  * @param application 분류기 초기화에 필요한 애플리케이션 인스턴스
  */
 class InferenceAgeViewModel(
-    application: Application
+    application: Application,
+    private val classifier: AgeGenderEngine,
+    private val workerDispatcher: CoroutineDispatcher = Dispatchers.Default
 ) : AndroidViewModel(application) {
 
-    /** 실제 얼굴 검출 및 나이/성별 추론을 수행하는 분류기 */
-    private val classifier = AgeGenderClassifier(application)
+    constructor(application: Application) : this(application, AgeGenderClassifier(application))
 
     private val _uiState = MutableStateFlow(InferenceAgeUiState())
 
@@ -65,7 +66,7 @@ class InferenceAgeViewModel(
             }
 
             runCatching {
-                withContext(Dispatchers.Default) {
+                withContext(workerDispatcher) {
                     classifier.classify(bitmap)
                 }
             }.onSuccess { result ->
